@@ -1,0 +1,16 @@
+<svg width="145" height="106" viewBox="0 0 145 106" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="display-128-64">
+<rect id="board" width="144.427" height="105.943" rx="12" fill="#0000FF"/>
+<rect id="screen" x="8.21329" y="20.9715" width="128" height="64" fill="black"/>
+<g id="holes">
+<circle id="Ellipse 1" cx="10.74" cy="10.74" r="4.73998" fill="black" stroke="#7C7C7C"/>
+<circle id="Ellipse 5" cx="58.5288" cy="6.73997" r="2.56151" fill="black" stroke="#7C7C7C"/>
+<circle id="Ellipse 6" cx="67.6518" cy="6.73997" r="2.56151" fill="black" stroke="#7C7C7C"/>
+<circle id="Ellipse 7" cx="76.7748" cy="6.73997" r="2.56151" fill="black" stroke="#7C7C7C"/>
+<circle id="Ellipse 8" cx="85.8978" cy="6.73997" r="2.56151" fill="black" stroke="#7C7C7C"/>
+<circle id="Ellipse 3" cx="10.74" cy="95.203" r="4.73998" fill="black" stroke="#7C7C7C"/>
+<circle id="Ellipse 2" cx="133.687" cy="10.74" r="4.73998" fill="black" stroke="#7C7C7C"/>
+<circle id="Ellipse 4" cx="133.687" cy="95.203" r="4.73998" fill="black" stroke="#7C7C7C"/>
+</g>
+</g>
+</svg>

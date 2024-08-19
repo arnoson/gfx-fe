@@ -1,0 +1,29 @@
+* {
+  box-sizing: border-box;
+}
+
+input,
+textarea {
+  box-sizing: content-box;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--color-panel-background);
+  color: var(--color-panel-text);
+}
+
+input {
+  padding-inline: 0.2em 0.3em;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.flow > * + * {
+  margin-block-start: var(--flow-space, 0.5rem);
+}

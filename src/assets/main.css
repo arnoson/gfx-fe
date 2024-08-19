@@ -1,0 +1,34 @@
+@layer reset, base, components, utilities;
+@import './reset.css' layer(reset);
+@import './base.css' layer(base);
+@import './panel.css' layer(components);
+@import './field.css' layer(components);
+
+:root {
+  --color-background: black;
+  --color-text: white;
+  --color-grid: hsl(0 0% 30% / 1);
+  --color-guide: var(--color-panel-background);
+  --color-panel-background: darkgray;
+  --color-panel-text: var(--color-background);
+  --color-highlight: blue;
+  --color-bounds: var(--color-highlight);
+}
+
+body,
+html,
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: monospace;
+  margin: 0;
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+[hidden] {
+  display: none;
+}

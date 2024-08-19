@@ -1,0 +1,19 @@
+input,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: inherit;
+  font-size: inherit;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
