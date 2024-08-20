@@ -26,8 +26,8 @@ const font = useFont()
 
     <FormField label="Canvas">
       <div class="size-input">
-        <input type="number" v-model="font.canvasWidth" />×
-        <input type="number" v-model="font.canvasHeight" />
+        <input type="number" min="1" max="128" v-model="font.canvasWidth" />×
+        <input type="number" min="1" max="128" v-model="font.canvasHeight" />
       </div>
     </FormField>
   </div>
