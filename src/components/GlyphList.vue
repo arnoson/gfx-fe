@@ -22,7 +22,7 @@ const getCharName = (code: number) => {
         :data-active="font.activeGlyphCode === code"
       >
         <article class="canvas">
-          <svg :viewBox="`0 0 ${font.height} ${font.height}`">
+          <svg :viewBox="`0 0 ${font.canvasWidth} ${font.canvasHeight}`">
             <use :href="`#glyph-${code}`" :x="glyph.bounds.left" />
           </svg>
           <header class="glyph-name">{{ getCharName(code) }}</header>

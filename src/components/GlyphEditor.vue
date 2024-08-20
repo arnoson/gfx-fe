@@ -18,9 +18,8 @@ const glyph = computed(
   () => font.activeGlyphCode && font.glyphs.get(font.activeGlyphCode),
 )
 
-const width = computed(() => font.height)
-const height = width
-
+const canvasWidth = computed(() => font.canvasWidth)
+const canvasHeight = computed(() => font.canvasHeight)
 const maxPixelSize = 50
 
 const container = ref<HTMLDivElement>()
@@ -28,12 +27,13 @@ const { width: containerWidth, height: containerHeight } =
   useElementSize(container)
 const glyphScale = computed(() => {
   // Scale factors to fit the canvas within the container.
-  const scaleWidth = containerWidth.value / width.value
-  const scaleHeight = containerHeight.value / height.value
+  const scaleWidth = containerWidth.value / canvasWidth.value
+  const scaleHeight = containerHeight.value / canvasHeight.value
 
   // Scale factors to fit within the canvas' max dimensions.
-  const scaleMaxWidth = (width.value * maxPixelSize) / width.value
-  const scaleMaxHeight = (height.value * maxPixelSize) / height.value
+  const scaleMaxWidth = (canvasWidth.value * maxPixelSize) / canvasWidth.value
+  const scaleMaxHeight =
+    (canvasHeight.value * maxPixelSize) / canvasHeight.value
 
   // Combine the scale factors to ensure the element fits within both
   // constraints.
@@ -66,8 +66,8 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   const scale = 1 / glyphScale.value
   let x = Math.floor(offsetX * scale)
   let y = Math.floor(offsetY * scale)
-  x = Math.max(0, Math.min(x, width.value - 1))
-  y = Math.max(0, Math.min(y, height.value - 1))
+  x = Math.max(0, Math.min(x, font.canvasWidth - 1))
+  y = Math.max(0, Math.min(y, font.canvasHeight - 1))
   return packPixel(x, y)
 }
 </script>
@@ -76,7 +76,7 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   <div class="editor" v-if="glyph">
     <div class="canvas-container" ref="container">
       <svg
-        :viewBox="`0 0 ${width} ${height}`"
+        :viewBox="`0 0 ${font.canvasWidth} ${font.canvasHeight}`"
         class="canvas"
         @mousedown="startDraw"
         @mousemove="draw"
@@ -91,22 +91,28 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
           class="pixel"
         ></rect>
         <!-- Grid -->
-        <rect :x="0" :y="0" :width="width" :height="height" class="grid" />
+        <rect
+          :x="0"
+          :y="0"
+          :width="canvasWidth"
+          :height="canvasHeight"
+          class="grid"
+        />
         <line
-          v-for="row in height - 1"
+          v-for="row in canvasHeight - 1"
           :hidden="row === font.baseline ? true : undefined"
           :x1="0"
           :y1="row"
-          :x2="width"
+          :x2="canvasWidth"
           :y2="row"
           class="grid"
         />
         <line
-          v-for="column in width - 1"
+          v-for="column in canvasWidth - 1"
           :x1="column"
           :y1="0"
           :x2="column"
-          :y2="height"
+          :y2="canvasHeight"
           class="grid"
         />
         <!-- Bearings -->
@@ -138,7 +144,7 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
         <line
           :x1="0"
           :y1="font.baseline"
-          :x2="width"
+          :x2="canvasWidth"
           :y2="font.baseline"
           class="baseline"
         />
@@ -154,11 +160,10 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
 
 <style scoped>
 .editor {
-  display: grid;
-  grid-template-rows: 1fr max-content;
-  height: 100%;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   padding: 1rem;
+  height: 100%;
 
   /* properties menu size + block margin */
   --properties-height: calc(1.68rem + 2rem);
@@ -169,17 +174,18 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
 }
 
 .canvas-container {
-  display: grid;
+  display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  max-height: 100%;
+  flex: 1;
 }
 
 .canvas {
-  anchor-name: --glyph;
+  anchor-name: --canvas;
   display: block;
-  width: calc(v-bind('width') * v-bind('glyphScale') * 1px);
-  height: calc(v-bind('height') * v-bind('glyphScale') * 1px);
+  width: calc(v-bind('canvasWidth') * v-bind('glyphScale') * 1px);
+  height: calc(v-bind('canvasHeight') * v-bind('glyphScale') * 1px);
   overflow: visible;
 
   .pixel {
@@ -216,7 +222,7 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
     position: fixed;
     bottom: calc(anchor(bottom) - var(--properties-height));
     transform: translateX(50%);
-    position-anchor: --glyph;
+    position-anchor: --canvas;
   }
 
   display: flex;

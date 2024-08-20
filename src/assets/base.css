@@ -13,6 +13,7 @@ textarea {
 
 input {
   padding-inline: 0.2em 0.3em;
+  min-width: 2ch;
 }
 
 input[type='number'] {

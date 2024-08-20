@@ -1,7 +1,8 @@
 .field {
   display: grid;
-  grid-template-columns: 10ch 1fr;
+  grid-template-columns: 11ch 1fr;
   gap: 0.5rem;
+  align-items: baseline;
 
   label {
     text-overflow: ellipsis;

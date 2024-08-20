@@ -3,7 +3,7 @@ import { parseFont } from '@/utils/parseFont'
 import { packPixel, unpackPixel } from '@/utils/pixel'
 import { useEventListener } from '@vueuse/core'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { computed, readonly, ref, watch } from 'vue'
+import { computed, nextTick, readonly, ref, watch } from 'vue'
 
 export type Glyph = {
   pixels: Set<number>
@@ -26,11 +26,42 @@ const getGlyphUrlParam = () => {
 }
 
 export const useFont = defineStore('font', () => {
+  const name = ref('New Font')
   const glyphs = ref(new Map<number, Glyph>())
-  const height = ref(10)
-  const width = computed(() => height.value)
+  const lineHeight = ref(10)
+  const canvasWidth = ref(20)
+  const canvasHeight = ref(20)
   const baseline = ref(5)
   const activeGlyphCode = ref(getGlyphUrlParam())
+  const moveGlyphsWithBaseline = ref(true)
+
+  const translateGlyph = (
+    glyph: Glyph,
+    translateX: number,
+    translateY: number,
+  ) => {
+    const newPixels = new Set<number>()
+    for (const pixel of glyph.pixels) {
+      const { x, y } = unpackPixel(pixel)
+      newPixels.add(packPixel(x + translateX, y + translateY))
+    }
+    glyph.pixels = newPixels
+    glyph.bounds = getGlyphBounds(glyph)
+  }
+
+  watch(canvasWidth, () => {
+    for (const [_, glyph] of glyphs.value) {
+      const { left, width } = getGlyphBounds(glyph)
+      const newLeft = Math.round((canvasWidth.value - width) / 2)
+      translateGlyph(glyph, newLeft - left, 0)
+    }
+  })
+
+  watch(baseline, (newBaseline, oldBaseline) => {
+    if (!moveGlyphsWithBaseline.value) return
+    const delta = newBaseline - oldBaseline
+    for (const [_, glyph] of glyphs.value) translateGlyph(glyph, 0, delta)
+  })
 
   useEventListener(
     window,
@@ -38,10 +69,10 @@ export const useFont = defineStore('font', () => {
     () => (activeGlyphCode.value = getGlyphUrlParam()),
   )
 
-  const getGlyphBounds = (pixels: Set<number>) => {
-    let left = width.value
+  const getGlyphBounds = ({ pixels }: Pick<Glyph, 'pixels'>) => {
+    let left = canvasWidth.value
+    let top = canvasHeight.value
     let right = 0
-    let top = width.value
     let bottom = 0
 
     if (!pixels.size) return { left, right, top, bottom, width: 0, height: 0 }
@@ -66,7 +97,7 @@ export const useFont = defineStore('font', () => {
 
   const addGlyph = (code: number, data: Partial<Glyph> = {}) => {
     const { pixels = new Set(), bearing = { left: 0, right: 0 } } = data
-    const bounds = getGlyphBounds(pixels)
+    const bounds = getGlyphBounds({ pixels })
     glyphs.value.set(code, { pixels, bearing, bounds })
   }
 
@@ -77,21 +108,26 @@ export const useFont = defineStore('font', () => {
     if (value) glyph.pixels.add(pixel)
     else glyph.pixels.delete(pixel)
 
-    glyph.bounds = getGlyphBounds(glyph.pixels)
+    glyph.bounds = getGlyphBounds(glyph)
   }
 
-  const load = (code: string) => {
+  const load = async (code: string) => {
     glyphs.value.clear()
     const font = parseFont(code)
     let charCode = font.asciiStart
 
+    name.value = font.name
+    lineHeight.value = font.yAdvance
+    canvasWidth.value = font.yAdvance
+    canvasHeight.value = font.yAdvance
     baseline.value = 20
-    height.value = font.yAdvance
+    // Setting the canvas size and baseline will trigger watchers, so we wait
+    // for the next tick and continue when the watchers have finished.
+    await nextTick()
 
     for (const glyph of font.glyphs) {
       const pixels = new Set<number>()
-      // Center the glyph in the cell.
-      const offset = Math.round((width.value - glyph.width) / 2)
+      const left = Math.floor((canvasWidth.value - glyph.width) / 2)
 
       for (let y = 0; y < glyph.height; y++) {
         for (let x = 0; x < glyph.width; x++) {
@@ -101,7 +137,7 @@ export const useFont = defineStore('font', () => {
           const bit = getBit(font.bytes, glyph.byteOffset + byteIndex, bitIndex)
 
           if (bit) {
-            const canvasX = x + offset
+            const canvasX = x + left
             const canvasY = y + (baseline.value + glyph.deltaY)
             const pixel = packPixel(canvasX, canvasY)
             pixels.add(pixel)
@@ -118,10 +154,14 @@ export const useFont = defineStore('font', () => {
   }
 
   return {
+    name,
     glyphs,
     activeGlyphCode,
-    height,
+    lineHeight,
     baseline,
+    moveGlyphsWithBaseline,
+    canvasWidth,
+    canvasHeight,
     addGlyph,
     setGlyphPixel,
     load,

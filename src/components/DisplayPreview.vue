@@ -13,7 +13,7 @@ const characters = computed(() => {
   for (const char of text.value) {
     if (char === '\n') {
       x = 0
-      y += font.height
+      y += font.lineHeight
       continue
     }
 
