@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
-import { packPixel, unpackPixelX, unpackPixelY } from '@/utils/pixel'
+import {
+  packPixel,
+  pixelIsCropped,
+  unpackPixelX,
+  unpackPixelY,
+} from '@/utils/pixel'
 import { useElementSize } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
@@ -82,10 +87,12 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
         @mousemove="draw"
         @mouseup="endDraw"
       >
+        <!-- Pixels  -->
         <rect
           v-for="pixel of glyph.pixels"
           :x="unpackPixelX(pixel)"
           :y="unpackPixelY(pixel)"
+          :data-cropped="pixelIsCropped(pixel, canvasWidth, canvasHeight)"
           width="1"
           height="1"
           class="pixel"
@@ -190,6 +197,9 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
 
   .pixel {
     fill: var(--color-text);
+    &[data-cropped='true'] {
+      fill: var(--color-grid);
+    }
   }
 
   .grid {
