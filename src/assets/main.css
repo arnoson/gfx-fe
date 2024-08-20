@@ -7,9 +7,9 @@
 :root {
   --color-background: black;
   --color-text: white;
-  --color-grid: hsl(0 0% 30% / 1);
+  --color-grid: hsl(0 0% 20% / 1);
   --color-guide: var(--color-panel-background);
-  --color-panel-background: darkgray;
+  --color-panel-background: hsl(0 0% 60% / 1);
   --color-panel-text: var(--color-background);
   --color-highlight: blue;
   --color-bounds: var(--color-highlight);
