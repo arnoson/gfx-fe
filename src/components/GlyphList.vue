@@ -4,6 +4,10 @@ import { computed } from 'vue'
 
 const font = useFont()
 const count = computed(() => font.glyphs.size)
+const getCharName = (code: number) => {
+  const char = String.fromCharCode(code)
+  return char === ' ' ? 'Space' : char
+}
 </script>
 
 <template>
@@ -17,11 +21,11 @@ const count = computed(() => font.glyphs.size)
         :href="`/#/glyph/${code}`"
         :data-active="font.activeGlyphCode === code"
       >
-        <article class="glyph">
+        <article class="canvas">
           <svg :viewBox="`0 0 ${font.height} ${font.height}`">
             <use :href="`#glyph-${code}`" :x="glyph.bounds.left" />
           </svg>
-          <header class="glyph-name">{{ String.fromCharCode(code) }}</header>
+          <header class="glyph-name">{{ getCharName(code) }}</header>
         </article>
       </a>
     </div>
@@ -45,9 +49,10 @@ const count = computed(() => font.glyphs.size)
 
 .glyph-name {
   text-align: center;
+  margin-bottom: 0.25em;
 }
 
-.glyph {
+.canvas {
   border: 1px solid var(--color-grid);
   border-radius: 4px;
 
