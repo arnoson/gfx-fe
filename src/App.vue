@@ -1,19 +1,16 @@
 <script setup lang="ts">
+import { useWindowSize } from '@vueuse/core'
+import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'radix-vue'
+import { ref } from 'vue'
 import DisplayPreview from './components/DisplayPreview.vue'
+import FontInfo from './components/FontInfo.vue'
 import GlyphDefs from './components/GlyphDefs.vue'
 import GlyphEditor from './components/GlyphEditor.vue'
 import GlyphList from './components/GlyphList.vue'
-import { ref } from 'vue'
-import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'radix-vue'
-import { useWindowSize } from '@vueuse/core'
-import FontInfo from './components/FontInfo.vue'
 import { useFont } from './stores/font'
-import code from './assets/vevey_pixel_12pt.h?raw'
 
 const { height } = useWindowSize()
 const font = useFont()
-
-font.load(code)
 </script>
 
 <template>

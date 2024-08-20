@@ -2,8 +2,19 @@
   box-sizing: border-box;
 }
 
+button {
+  line-height: 1.4;
+  padding-inline: 0.5em 0.55em;
+  cursor: pointer;
+
+  &:hover:not(:active) {
+    background-color: var(--color-text);
+  }
+}
+
 input,
-textarea {
+textarea,
+button {
   box-sizing: content-box;
   border: none;
   border-radius: 3px;

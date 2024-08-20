@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
 import FormField from './FormField.vue'
+import FontImport from './FontImport.vue'
 const font = useFont()
 </script>
 
 <template>
   <div class="font-info flow">
+    <FontImport />
+
     <FormField label="Name">
       <input v-model="font.name" />
     </FormField>
