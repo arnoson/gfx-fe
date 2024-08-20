@@ -1,5 +1,6 @@
 import { getBit } from '@/utils/getBit'
 import { parseFont } from '@/utils/parseFont'
+import { packPixel, unpackPixel } from '@/utils/pixel'
 import { useEventListener } from '@vueuse/core'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { computed, readonly, ref, watch } from 'vue'
@@ -46,8 +47,7 @@ export const useFont = defineStore('font', () => {
     if (!pixels.size) return { left, right, top, bottom, width: 0, height: 0 }
 
     for (const pixel of pixels) {
-      const x = (pixel >> 8) & 0xff
-      const y = pixel & 0xff
+      const { x, y } = unpackPixel(pixel)
       if (x < left) left = x
       if (x > right) right = x
       if (y < top) top = y
@@ -101,9 +101,9 @@ export const useFont = defineStore('font', () => {
           const bit = getBit(font.bytes, glyph.byteOffset + byteIndex, bitIndex)
 
           if (bit) {
-            const imageX = x + offset
-            const imageY = y + (baseline.value + glyph.deltaY)
-            const pixel = (imageX << 8) | imageY
+            const canvasX = x + offset
+            const canvasY = y + (baseline.value + glyph.deltaY)
+            const pixel = packPixel(canvasX, canvasY)
             pixels.add(pixel)
           }
         }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
+import { unpackPixelX, unpackPixelY } from '@/utils/pixel'
 const font = useFont()
 </script>
 
@@ -9,8 +10,8 @@ const font = useFont()
       <g v-for="[code, glyph] of font.glyphs" :id="`glyph-${code}`">
         <rect
           v-for="pixel of glyph.pixels"
-          :x="((pixel >> 8) & 0xff) - glyph.bounds.left"
-          :y="pixel & 0xff"
+          :x="unpackPixelX(pixel) - glyph.bounds.left"
+          :y="unpackPixelY(pixel)"
           width="1"
           height="1"
           class="pixel"
