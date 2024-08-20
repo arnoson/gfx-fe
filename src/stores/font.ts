@@ -138,7 +138,7 @@ export const useFont = defineStore('font', () => {
 
           if (bit) {
             const canvasX = x + left
-            const canvasY = y + (baseline.value + glyph.deltaY)
+            const canvasY = y + (baseline.value - 1 + glyph.deltaY)
             const pixel = packPixel(canvasX, canvasY)
             pixels.add(pixel)
           }
