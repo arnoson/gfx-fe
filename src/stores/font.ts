@@ -5,13 +5,10 @@ import {
   cropPixels,
   getBounds,
   packPixel,
-  pixelIsCropped,
   translatePixels,
-  unpackPixel,
 } from '@/utils/pixel'
-import { useEventListener } from '@vueuse/core'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { computed, nextTick, readonly, ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 
 export type Glyph = {
   pixels: Set<number>
@@ -26,20 +23,13 @@ export type Glyph = {
   bearing: { left: number; right: number }
 }
 
-const getGlyphUrlParam = () => {
-  const { hash } = window.location
-  if (!hash.startsWith('#/glyph/')) return
-  const param = hash.split('/').at(-1)
-  return param ? +param : undefined
-}
-
 export const useFont = defineStore('font', () => {
   const name = ref('New Font')
   const glyphs = ref(new Map<number, Glyph>())
   const lineHeight = ref(10)
   const canvas = ref({ width: 16, height: 16 })
   const baseline = ref(5)
-  const activeGlyphCode = ref(getGlyphUrlParam())
+  const activeGlyphCode = ref<number | undefined>()
   const moveGlyphsWithBaseline = ref(true)
 
   watch(
@@ -62,12 +52,6 @@ export const useFont = defineStore('font', () => {
       glyph.bounds = getBounds(glyph.pixels)
     }
   })
-
-  useEventListener(
-    window,
-    'hashchange',
-    () => (activeGlyphCode.value = getGlyphUrlParam()),
-  )
 
   const addGlyph = (code: number, data: Partial<Glyph> = {}) => {
     const { pixels = new Set(), bearing = { left: 0, right: 0 } } = data

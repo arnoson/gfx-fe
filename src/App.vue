@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { useWindowSize } from '@vueuse/core'
+import { useEventListener, useWindowSize } from '@vueuse/core'
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'radix-vue'
-import { ref } from 'vue'
 import DisplayPreview from './components/DisplayPreview.vue'
 import FontInfo from './components/FontInfo.vue'
 import GlyphDefs from './components/GlyphDefs.vue'
@@ -11,6 +10,21 @@ import { useFont } from './stores/font'
 
 const { height } = useWindowSize()
 const font = useFont()
+
+const getGlyphUrlParam = () => {
+  const { hash } = window.location
+  if (!hash.startsWith('#/glyph/')) return
+  const param = hash.split('/').at(-1)
+  return param ? +param : undefined
+}
+
+font.activeGlyphCode = getGlyphUrlParam()
+
+useEventListener(
+  window,
+  'hashchange',
+  () => (font.activeGlyphCode = getGlyphUrlParam()),
+)
 </script>
 
 <template>
