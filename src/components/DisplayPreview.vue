@@ -86,7 +86,7 @@ const characters = computed(() => {
 }
 
 .board {
-  fill: var(--color-highlight);
+  fill: var(--color-accent);
 }
 
 .holes circle {

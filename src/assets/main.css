@@ -11,8 +11,8 @@
   --color-guide: var(--color-panel-background);
   --color-panel-background: hsl(0 0% 60% / 1);
   --color-panel-text: var(--color-background);
-  --color-highlight: blue;
-  --color-bounds: var(--color-highlight);
+  --color-accent: blue;
+  --color-bounds: var(--color-accent);
 }
 
 body,

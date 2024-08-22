@@ -68,8 +68,8 @@ const getCharName = (code: number) => {
   }
 
   [data-active='true'] > & {
-    background-color: var(--color-highlight);
-    border-color: var(--color-highlight);
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
   }
 }
 </style>

@@ -25,7 +25,7 @@ button {
 input {
   padding-inline: 0.2em 0.3em;
   min-width: 2ch;
-  accent-color: var(--color-highlight);
+  accent-color: var(--color-accent);
 }
 
 input[type='number'] {

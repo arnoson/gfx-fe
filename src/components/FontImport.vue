@@ -43,8 +43,8 @@ const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
 
   &[data-drag-active='true'] {
     color: var(--color-text);
-    background-color: var(--color-highlight);
-    border-color: var(--color-highlight);
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
   }
 }
 
