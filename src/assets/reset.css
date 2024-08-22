@@ -17,3 +17,7 @@ a {
   text-decoration: none;
   color: inherit;
 }
+
+menu {
+  margin: 0;
+}

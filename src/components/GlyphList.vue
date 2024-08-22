@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import NewGlyphDialog from './NewGlyphDialog.vue'
+import ModalDialog from './ModalDialog.vue'
 
 const font = useFont()
 const count = computed(() => font.glyphs.size)
@@ -8,20 +10,77 @@ const getCharName = (code: number) => {
   const char = String.fromCharCode(code)
   return char === ' ' ? 'Space' : char
 }
+
+const sortedGlyphs = computed(() =>
+  Array.from(font.glyphs.entries()).sort(([codeA], [codeB]) => codeA - codeB),
+)
+
+const newGlyphDialog = ref<InstanceType<typeof NewGlyphDialog>>()
+const grid = ref<HTMLElement>()
+
+// Scroll the active glyph into view if needed.
+watch(
+  () => font.activeGlyphCode,
+  async (code) => {
+    if (!grid.value) return
+    const glyph = document.querySelector(`.glyph[data-char-code="${code}"]`)
+    if (!glyph) return
+
+    const gridBounds = grid.value.getBoundingClientRect()
+    const glyphBounds = glyph.getBoundingClientRect()
+
+    const isCropped =
+      glyphBounds.top < gridBounds.top || glyphBounds.bottom > gridBounds.bottom
+
+    if (isCropped) glyph.scrollIntoView({ behavior: 'smooth' })
+  },
+)
+
+const removeConfirmDialog = ref<InstanceType<typeof ModalDialog>>()
+const remove = async (code: number) => {
+  const result = await removeConfirmDialog.value?.prompt()
+  if (result !== 'submit') return
+  font.removeGlyph(code)
+}
 </script>
 
 <template>
   <div class="glyph-list">
+    <NewGlyphDialog ref="newGlyphDialog" />
+    <ModalDialog ref="removeConfirmDialog" v-slot="{ close }">
+      <form method="dialog">
+        Are you sure?
+        <menu>
+          <button type="reset" @click="close">Cancel</button>
+          <button type="submit" value="submit" autofocus>Remove</button>
+        </menu>
+      </form>
+    </ModalDialog>
+
     <header class="header">
-      <h2 v-if="count">{{ count }} Glyphs:</h2>
+      <h2 v-if="count === 1">1 Glyph</h2>
+      <h2 v-else-if="count">{{ count }} Glyphs</h2>
       <h2 v-else>No Glyphs yet</h2>
+      <button class="add" @click="newGlyphDialog?.open()">
+        <svg
+          class="icon"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </button>
     </header>
 
-    <div class="grid">
+    <div class="grid" ref="grid">
       <a
-        v-for="[code, glyph] of font.glyphs"
+        v-for="[code, glyph] of sortedGlyphs"
+        class="glyph"
         :href="`/#/glyph/${code}`"
         :data-active="font.activeGlyphCode === code"
+        :data-char-code="code"
+        @keydown.delete="remove(code)"
       >
         <article class="canvas">
           <svg :viewBox="`0 0 ${font.canvas.width} ${font.canvas.height}`">
@@ -38,6 +97,9 @@ const getCharName = (code: number) => {
 .header {
   padding-inline: 1rem;
   padding-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .glyph-list {
@@ -49,6 +111,8 @@ const getCharName = (code: number) => {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+  grid-template-rows: max-content;
+
   gap: 0.5rem;
   padding-inline: 1rem;
   overflow-y: auto;
@@ -59,7 +123,7 @@ const getCharName = (code: number) => {
   margin-bottom: 0.25em;
 }
 
-.canvas {
+.glyph {
   border: 1px solid var(--color-grid);
   border-radius: 4px;
 
@@ -67,9 +131,33 @@ const getCharName = (code: number) => {
     background-color: var(--color-grid);
   }
 
-  [data-active='true'] > & {
+  &[data-active='true'] {
     background-color: var(--color-accent);
     border-color: var(--color-accent);
+  }
+
+  &:focus {
+    border-color: var(--color-text);
+  }
+}
+
+.add {
+  background: none;
+  padding: 0;
+  anchor-name: --add-glyph-button;
+
+  .icon {
+    height: 1.8em;
+    width: auto;
+  }
+
+  .icon path {
+    stroke: var(--color-panel-background);
+    stroke-width: 1.5;
+  }
+
+  &:hover .icon path {
+    stroke: var(--color-text);
   }
 }
 </style>

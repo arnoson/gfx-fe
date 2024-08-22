@@ -110,6 +110,11 @@ export const useFont = defineStore('font', () => {
     glyphHistory.set(code, { index: 0, stack: [] })
   }
 
+  const removeGlyph = (code: number) => {
+    glyphs.value.delete(code)
+    glyphHistory.delete(code)
+  }
+
   const setGlyphPixel = (code: number, pixel: number, value: boolean) => {
     const glyph = glyphs.value.get(code)
     if (!glyph) return
@@ -251,6 +256,7 @@ export const useFont = defineStore('font', () => {
     moveGlyphsWithBaseline,
     canvas,
     addGlyph,
+    removeGlyph,
     setGlyphPixel,
     addHistoryEntry,
     load,

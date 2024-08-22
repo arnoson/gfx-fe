@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  overflow-wrap: break-word;
 }
 
 button {
@@ -9,6 +10,16 @@ button {
 
   &:hover:not(:active) {
     background-color: var(--color-text);
+  }
+}
+
+button[data-theme='positive'] {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+
+  &:hover:not(:active) {
+    background-color: var(--color-text);
+    color: var(--color-accent);
   }
 }
 

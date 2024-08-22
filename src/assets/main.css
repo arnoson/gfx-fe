@@ -3,6 +3,7 @@
 @import './base.css' layer(base);
 @import './panel.css' layer(components);
 @import './field.css' layer(components);
+@import './dialog.css' layer(components);
 
 :root {
   --color-background: black;
