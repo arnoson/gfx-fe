@@ -28,6 +28,8 @@ useEventListener(
 )
 
 font.addGlyph(35, { pixels: new Set([packPixel(5, 5)]) })
+font.activeGlyphCode = 35
+font.addHistoryEntry()
 </script>
 
 <template>

@@ -65,7 +65,10 @@ const draw = (e: MouseEvent) => {
   font.setGlyphPixel(font.activeGlyphCode, pixel, drawingPixelValue)
 }
 
-const endDraw = () => (isDrawing = false)
+const endDraw = () => {
+  isDrawing = false
+  font.addHistoryEntry()
+}
 
 const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   const scale = 1 / glyphScale.value

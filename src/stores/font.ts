@@ -34,6 +34,7 @@ export const useFont = defineStore('font', () => {
   const activeGlyphCode = ref<number | undefined>()
   const moveGlyphsWithBaseline = ref(true)
 
+  const maxHistoryStack = 50
   const glyphHistory = new Map<number, { stack: Pixels[]; index: number }>()
 
   const undo = () => {
@@ -63,7 +64,11 @@ export const useFont = defineStore('font', () => {
     activeGlyph.bounds = getBounds(activeGlyph.pixels)
   }
 
-  const addHistoryAction = (code: number, pixels: Pixels) => {
+  const addHistoryEntry = (code = activeGlyphCode.value) => {
+    if (code === undefined) return
+    const glyph = glyphs.value.get(code)
+    if (!glyph) return
+
     const history = glyphHistory.get(code)
     if (!history) return
 
@@ -73,7 +78,8 @@ export const useFont = defineStore('font', () => {
       history.stack.splice(history.index + 1)
     }
 
-    history.stack.push(new Set(pixels))
+    history.stack.push(new Set(glyph.pixels))
+    if (history.stack.length > maxHistoryStack) history.stack.shift()
     history.index = history.stack.length - 1
   }
 
@@ -102,7 +108,6 @@ export const useFont = defineStore('font', () => {
     const { pixels = new Set(), bearing = { left: 0, right: 0 } } = data
     glyphs.value.set(code, { pixels, bearing, bounds: getBounds(pixels) })
     glyphHistory.set(code, { index: 0, stack: [] })
-    addHistoryAction(code, pixels)
   }
 
   const setGlyphPixel = (code: number, pixel: number, value: boolean) => {
@@ -117,7 +122,6 @@ export const useFont = defineStore('font', () => {
     else glyph.pixels.delete(pixel)
 
     glyph.bounds = getBounds(glyph.pixels)
-    addHistoryAction(code, glyph.pixels)
   }
 
   const load = async (code: string) => {
@@ -157,7 +161,9 @@ export const useFont = defineStore('font', () => {
         left: glyph.deltaX,
         right: glyph.xAdvance - glyph.width - glyph.deltaX,
       }
-      addGlyph(charCode++, { pixels, bearing })
+      addGlyph(charCode, { pixels, bearing })
+      addHistoryEntry(charCode)
+      charCode++
     }
   }
 
@@ -246,6 +252,7 @@ export const useFont = defineStore('font', () => {
     canvas,
     addGlyph,
     setGlyphPixel,
+    addHistoryEntry,
     load,
     save,
     undo,
