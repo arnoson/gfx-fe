@@ -6,7 +6,7 @@ import {
   unpackPixelX,
   unpackPixelY,
 } from '@/utils/pixel'
-import { useElementSize } from '@vueuse/core'
+import { useElementSize, useMagicKeys, whenever } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
 const font = useFont()
@@ -75,6 +75,10 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   y = Math.max(0, Math.min(y, font.canvas.height - 1))
   return packPixel(x, y)
 }
+
+const keys = useMagicKeys()
+whenever(keys.Ctrl_z, () => font.undo())
+whenever(keys.Ctrl_y, () => font.redo())
 </script>
 
 <template>

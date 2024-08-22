@@ -7,6 +7,7 @@ import GlyphDefs from './components/GlyphDefs.vue'
 import GlyphEditor from './components/GlyphEditor.vue'
 import GlyphList from './components/GlyphList.vue'
 import { useFont } from './stores/font'
+import { packPixel } from './utils/pixel'
 
 const { height } = useWindowSize()
 const font = useFont()
@@ -25,6 +26,8 @@ useEventListener(
   'hashchange',
   () => (font.activeGlyphCode = getGlyphUrlParam()),
 )
+
+font.addGlyph(35, { pixels: new Set([packPixel(5, 5)]) })
 </script>
 
 <template>

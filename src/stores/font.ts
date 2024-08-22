@@ -6,9 +6,11 @@ import {
   getBounds,
   packPixel,
   translatePixels,
+  unpackPixel,
+  type Pixels,
 } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, readonly, ref, watch } from 'vue'
 
 export type Glyph = {
   pixels: Set<number>
@@ -31,6 +33,49 @@ export const useFont = defineStore('font', () => {
   const baseline = ref(5)
   const activeGlyphCode = ref<number | undefined>()
   const moveGlyphsWithBaseline = ref(true)
+
+  const glyphHistory = new Map<number, { stack: Pixels[]; index: number }>()
+
+  const undo = () => {
+    if (!activeGlyphCode.value) return
+
+    const history = glyphHistory.get(activeGlyphCode.value)
+    if (!history || !history.stack.length || history.index < 1) return
+
+    const activeGlyph = glyphs.value.get(activeGlyphCode.value)
+    if (!activeGlyph) return
+
+    history.index--
+    activeGlyph.pixels = new Set(history.stack.at(history.index))
+    activeGlyph.bounds = getBounds(activeGlyph.pixels)
+  }
+
+  const redo = () => {
+    if (!activeGlyphCode.value) return
+    const history = glyphHistory.get(activeGlyphCode.value)
+    if (!history || history.index >= history.stack.length - 1) return
+
+    const activeGlyph = glyphs.value.get(activeGlyphCode.value)
+    if (!activeGlyph) return
+
+    history.index++
+    activeGlyph.pixels = new Set(history.stack.at(history.index))
+    activeGlyph.bounds = getBounds(activeGlyph.pixels)
+  }
+
+  const addHistoryAction = (code: number, pixels: Pixels) => {
+    const history = glyphHistory.get(code)
+    if (!history) return
+
+    // We undo-ed into history and because we start a new future we have to
+    // delete the existing future stack.
+    if (history.index < history.stack.length - 1) {
+      history.stack.splice(history.index + 1)
+    }
+
+    history.stack.push(new Set(pixels))
+    history.index = history.stack.length - 1
+  }
 
   watch(
     () => canvas.value.width,
@@ -56,16 +101,23 @@ export const useFont = defineStore('font', () => {
   const addGlyph = (code: number, data: Partial<Glyph> = {}) => {
     const { pixels = new Set(), bearing = { left: 0, right: 0 } } = data
     glyphs.value.set(code, { pixels, bearing, bounds: getBounds(pixels) })
+    glyphHistory.set(code, { index: 0, stack: [] })
+    addHistoryAction(code, pixels)
   }
 
   const setGlyphPixel = (code: number, pixel: number, value: boolean) => {
     const glyph = glyphs.value.get(code)
     if (!glyph) return
 
+    // Break if the pixel already has the specified value.
+    if (value && glyph.pixels.has(pixel)) return
+    if (!value && !glyph.pixels.has(pixel)) return
+
     if (value) glyph.pixels.add(pixel)
     else glyph.pixels.delete(pixel)
 
     glyph.bounds = getBounds(glyph.pixels)
+    addHistoryAction(code, glyph.pixels)
   }
 
   const load = async (code: string) => {
@@ -196,6 +248,8 @@ export const useFont = defineStore('font', () => {
     setGlyphPixel,
     load,
     save,
+    undo,
+    redo,
   }
 })
 
