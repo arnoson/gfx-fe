@@ -1,6 +1,14 @@
-import { getBit } from '@/utils/getBit'
-import { parseFont } from '@/utils/parseFont'
-import { packPixel, unpackPixel } from '@/utils/pixel'
+import { getBit, setBit } from '@/utils/bit'
+import { downloadFile } from '@/utils/file'
+import { parseFont, serializeFont, type GfxGlyph } from '@/utils/font'
+import {
+  cropPixels,
+  getBounds,
+  packPixel,
+  pixelIsCropped,
+  translatePixels,
+  unpackPixel,
+} from '@/utils/pixel'
 import { useEventListener } from '@vueuse/core'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { computed, nextTick, readonly, ref, watch } from 'vue'
@@ -29,38 +37,30 @@ export const useFont = defineStore('font', () => {
   const name = ref('New Font')
   const glyphs = ref(new Map<number, Glyph>())
   const lineHeight = ref(10)
-  const canvasWidth = ref(20)
-  const canvasHeight = ref(20)
+  const canvas = ref({ width: 16, height: 16 })
   const baseline = ref(5)
   const activeGlyphCode = ref(getGlyphUrlParam())
   const moveGlyphsWithBaseline = ref(true)
 
-  const translateGlyph = (
-    glyph: Glyph,
-    translateX: number,
-    translateY: number,
-  ) => {
-    const newPixels = new Set<number>()
-    for (const pixel of glyph.pixels) {
-      const { x, y } = unpackPixel(pixel)
-      newPixels.add(packPixel(x + translateX, y + translateY))
-    }
-    glyph.pixels = newPixels
-    glyph.bounds = getGlyphBounds(glyph)
-  }
-
-  watch(canvasWidth, () => {
-    for (const [_, glyph] of glyphs.value) {
-      const { left, width } = getGlyphBounds(glyph)
-      const newLeft = Math.round((canvasWidth.value - width) / 2)
-      translateGlyph(glyph, newLeft - left, 0)
-    }
-  })
+  watch(
+    () => canvas.value.width,
+    (canvasWidth) => {
+      for (const [_, glyph] of glyphs.value) {
+        const { left, width } = getBounds(glyph.pixels)
+        const newLeft = Math.round((canvasWidth - width) / 2)
+        glyph.pixels = translatePixels(glyph.pixels, newLeft - left, 0)
+        glyph.bounds = getBounds(glyph.pixels)
+      }
+    },
+  )
 
   watch(baseline, (newBaseline, oldBaseline) => {
     if (!moveGlyphsWithBaseline.value) return
     const delta = newBaseline - oldBaseline
-    for (const [_, glyph] of glyphs.value) translateGlyph(glyph, 0, delta)
+    for (const [_, glyph] of glyphs.value) {
+      glyph.pixels = translatePixels(glyph.pixels, 0, delta)
+      glyph.bounds = getBounds(glyph.pixels)
+    }
   })
 
   useEventListener(
@@ -69,36 +69,9 @@ export const useFont = defineStore('font', () => {
     () => (activeGlyphCode.value = getGlyphUrlParam()),
   )
 
-  const getGlyphBounds = ({ pixels }: Pick<Glyph, 'pixels'>) => {
-    let left = canvasWidth.value
-    let top = canvasHeight.value
-    let right = 0
-    let bottom = 0
-
-    if (!pixels.size) return { left, right, top, bottom, width: 0, height: 0 }
-
-    for (const pixel of pixels) {
-      const { x, y } = unpackPixel(pixel)
-      if (x < left) left = x
-      if (x > right) right = x
-      if (y < top) top = y
-      if (y > bottom) bottom = y
-    }
-
-    return {
-      left,
-      right,
-      top,
-      bottom,
-      width: right - left + 1,
-      height: bottom - top + 1,
-    }
-  }
-
   const addGlyph = (code: number, data: Partial<Glyph> = {}) => {
     const { pixels = new Set(), bearing = { left: 0, right: 0 } } = data
-    const bounds = getGlyphBounds({ pixels })
-    glyphs.value.set(code, { pixels, bearing, bounds })
+    glyphs.value.set(code, { pixels, bearing, bounds: getBounds(pixels) })
   }
 
   const setGlyphPixel = (code: number, pixel: number, value: boolean) => {
@@ -108,7 +81,7 @@ export const useFont = defineStore('font', () => {
     if (value) glyph.pixels.add(pixel)
     else glyph.pixels.delete(pixel)
 
-    glyph.bounds = getGlyphBounds(glyph)
+    glyph.bounds = getBounds(glyph.pixels)
   }
 
   const load = async (code: string) => {
@@ -118,8 +91,7 @@ export const useFont = defineStore('font', () => {
 
     name.value = font.name
     lineHeight.value = font.yAdvance
-    canvasWidth.value = font.yAdvance
-    canvasHeight.value = font.yAdvance
+    canvas.value = { width: font.yAdvance, height: font.yAdvance }
     baseline.value = 20
     // Setting the canvas size and baseline will trigger watchers, so we wait
     // for the next tick and continue when the watchers have finished.
@@ -127,7 +99,7 @@ export const useFont = defineStore('font', () => {
 
     for (const glyph of font.glyphs) {
       const pixels = new Set<number>()
-      const left = Math.floor((canvasWidth.value - glyph.width) / 2)
+      const left = Math.floor((canvas.value.width - glyph.width) / 2)
 
       for (let y = 0; y < glyph.height; y++) {
         for (let x = 0; x < glyph.width; x++) {
@@ -153,6 +125,81 @@ export const useFont = defineStore('font', () => {
     }
   }
 
+  const save = () => {
+    const { width: canvasWidth, height: canvasHeight } = canvas.value
+
+    const croppedGlyphs = new Map(
+      Array.from(glyphs.value.entries()).map(([code, glyph]) => {
+        const pixels = cropPixels(glyph.pixels, canvasWidth, canvasHeight)
+        const bounds = getBounds(pixels)
+        const croppedGlyph: Glyph = { ...glyph, pixels, bounds }
+        return [code, croppedGlyph]
+      }),
+    )
+
+    const charCodes = Array.from(croppedGlyphs.keys())
+    const asciiStart = Math.min(...charCodes)
+    const asciiEnd = Math.max(...charCodes)
+
+    let bytesCount = 0
+    for (const [_, { bounds }] of croppedGlyphs) {
+      bytesCount += Math.ceil((bounds.width * bounds.height) / 8)
+    }
+
+    const gfxGlyphs: GfxGlyph[] = []
+    const bytes = new Uint8Array(bytesCount)
+    let byteOffset = 0
+    for (const [_, glyph] of croppedGlyphs) {
+      const { bounds, bearing } = glyph
+
+      let byteIndex = 0
+      let bitIndex = 7
+
+      for (let y = 0; y < bounds.height; y++) {
+        for (let x = 0; x < bounds.width; x++) {
+          const canvasX = x + bounds.left
+          const canvasY = y + bounds.top
+
+          const pixel = packPixel(canvasX, canvasY)
+          // We use a positive value to indicate a filled (white) pixel, but
+          // GFXFont seems to do it the other way round.
+          const value = !glyph.pixels.has(pixel)
+
+          if (bitIndex < 0) {
+            byteIndex++
+            bitIndex = 7
+          }
+
+          setBit(bytes, byteOffset + byteIndex, bitIndex, value)
+          bitIndex--
+        }
+      }
+
+      gfxGlyphs.push({
+        byteOffset,
+        width: bounds.width,
+        height: bounds.height,
+        xAdvance: bounds.width + bearing.left + bearing.right,
+        deltaX: bearing.left,
+        deltaY: bounds.top - (baseline.value - 1),
+      })
+
+      if (bounds.width && bounds.height) byteOffset += byteIndex + 1
+    }
+
+    downloadFile(
+      `${name.value}.h`,
+      serializeFont({
+        name: name.value,
+        bytes,
+        glyphs: gfxGlyphs,
+        asciiStart,
+        asciiEnd,
+        yAdvance: lineHeight.value,
+      }),
+    )
+  }
+
   return {
     name,
     glyphs,
@@ -160,11 +207,11 @@ export const useFont = defineStore('font', () => {
     lineHeight,
     baseline,
     moveGlyphsWithBaseline,
-    canvasWidth,
-    canvasHeight,
+    canvas,
     addGlyph,
     setGlyphPixel,
     load,
+    save,
   }
 })
 

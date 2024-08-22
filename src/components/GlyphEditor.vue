@@ -23,8 +23,8 @@ const glyph = computed(
   () => font.activeGlyphCode && font.glyphs.get(font.activeGlyphCode),
 )
 
-const canvasWidth = computed(() => font.canvasWidth)
-const canvasHeight = computed(() => font.canvasHeight)
+const canvasWidth = computed(() => font.canvas.width)
+const canvasHeight = computed(() => font.canvas.height)
 const maxPixelSize = 50
 
 const container = ref<HTMLDivElement>()
@@ -71,8 +71,8 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   const scale = 1 / glyphScale.value
   let x = Math.floor(offsetX * scale)
   let y = Math.floor(offsetY * scale)
-  x = Math.max(0, Math.min(x, font.canvasWidth - 1))
-  y = Math.max(0, Math.min(y, font.canvasHeight - 1))
+  x = Math.max(0, Math.min(x, font.canvas.width - 1))
+  y = Math.max(0, Math.min(y, font.canvas.height - 1))
   return packPixel(x, y)
 }
 </script>
@@ -81,7 +81,7 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   <div class="editor" v-if="glyph">
     <div class="canvas-container" ref="container">
       <svg
-        :viewBox="`0 0 ${font.canvasWidth} ${font.canvasHeight}`"
+        :viewBox="`0 0 ${canvasWidth} ${canvasHeight}`"
         class="canvas"
         @mousedown="startDraw"
         @mousemove="draw"

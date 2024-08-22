@@ -7,7 +7,10 @@ const font = useFont()
 
 <template>
   <div class="font-info flow">
-    <FontImport />
+    <div class="import-export">
+      <FontImport />
+      <button @click="font.save()">Save</button>
+    </div>
 
     <FormField label="Name">
       <input v-model="font.name" />
@@ -29,14 +32,25 @@ const font = useFont()
 
     <FormField label="Canvas">
       <div class="size-input">
-        <input type="number" min="1" max="128" v-model="font.canvasWidth" />×
-        <input type="number" min="1" max="128" v-model="font.canvasHeight" />
+        <input type="number" min="1" max="128" v-model="font.canvas.width" />×
+        <input type="number" min="1" max="128" v-model="font.canvas.height" />
       </div>
     </FormField>
   </div>
 </template>
 
 <style scoped>
+.font-info {
+  padding-inline: 1rem;
+}
+
+.import-export {
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
 .size-input {
   display: grid;
   gap: 0.5rem;

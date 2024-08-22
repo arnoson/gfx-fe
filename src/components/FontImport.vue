@@ -21,7 +21,8 @@ const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     :data-drag-active="isDragActive"
   >
     <input v-bind="getInputProps()" />
-    <button @click="open">Import</button>or drop file
+    <button @click="open">Load</button>
+    <div class="drop-hint">or drop file</div>
   </div>
 </template>
 
@@ -31,8 +32,10 @@ const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
   gap: 0.5rem;
   align-items: baseline;
   color: var(--color-panel-background);
+  overflow: hidden;
 
-  margin-inline: -0.1rem;
+  /* Looks a bit better with the other font infos below. */
+  margin-left: -0.1rem;
 
   padding: 0.75rem;
   border: 1px solid var(--color-grid);
@@ -43,5 +46,11 @@ const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     background-color: var(--color-highlight);
     border-color: var(--color-highlight);
   }
+}
+
+.drop-hint {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

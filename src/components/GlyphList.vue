@@ -12,8 +12,10 @@ const getCharName = (code: number) => {
 
 <template>
   <div class="glyph-list">
-    <h2 v-if="count">{{ count }} Glyphs:</h2>
-    <h2 v-else>No Glyphs yet</h2>
+    <header class="header">
+      <h2 v-if="count">{{ count }} Glyphs:</h2>
+      <h2 v-else>No Glyphs yet</h2>
+    </header>
 
     <div class="grid">
       <a
@@ -22,7 +24,7 @@ const getCharName = (code: number) => {
         :data-active="font.activeGlyphCode === code"
       >
         <article class="canvas">
-          <svg :viewBox="`0 0 ${font.canvasWidth} ${font.canvasHeight}`">
+          <svg :viewBox="`0 0 ${font.canvas.width} ${font.canvas.height}`">
             <use :href="`#glyph-${code}`" :x="glyph.bounds.left" />
           </svg>
           <header class="glyph-name">{{ getCharName(code) }}</header>
@@ -33,8 +35,12 @@ const getCharName = (code: number) => {
 </template>
 
 <style scoped>
+.header {
+  padding-inline: 1rem;
+  padding-bottom: 0.5rem;
+}
+
 .glyph-list {
-  /* max-height: 100%; */
   overflow: hidden;
   display: grid;
   grid-template-rows: max-content 1fr;
@@ -44,6 +50,7 @@ const getCharName = (code: number) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
   gap: 0.5rem;
+  padding-inline: 1rem;
   overflow-y: auto;
 }
 
@@ -62,7 +69,7 @@ const getCharName = (code: number) => {
 
   [data-active='true'] > & {
     background-color: var(--color-highlight);
-    border: none;
+    border-color: var(--color-highlight);
   }
 }
 </style>

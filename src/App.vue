@@ -49,7 +49,7 @@ const font = useFont()
 
   transition: opacity 200ms;
 
-  &[data-state='inactive'] {
+  &[data-state='inactive']:not(:focus) {
     opacity: 0.1;
   }
 
@@ -68,8 +68,9 @@ const font = useFont()
 }
 
 #panel-sidebar {
-  padding: 1rem;
   display: grid;
   grid-template-rows: max-content 1fr;
+  gap: 1rem;
+  padding-block: 1rem;
 }
 </style>
