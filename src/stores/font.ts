@@ -31,6 +31,12 @@ export const useFont = defineStore('font', () => {
   const lineHeight = ref(10)
   const canvas = ref({ width: 16, height: 16 })
   const baseline = ref(5)
+  const metrics = ref({
+    ascender: undefined,
+    capHeight: undefined,
+    xHeight: undefined,
+    descender: undefined,
+  })
   const activeGlyphCode = ref<number | undefined>()
   const moveGlyphsWithBaseline = ref(true)
 
@@ -253,6 +259,7 @@ export const useFont = defineStore('font', () => {
     activeGlyphCode,
     lineHeight,
     baseline,
+    metrics,
     moveGlyphsWithBaseline,
     canvas,
     addGlyph,

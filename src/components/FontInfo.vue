@@ -30,12 +30,48 @@ const font = useFont()
       </div>
     </FormField>
 
+    <FormField label="Metrics">
+      <div class="metrics">
+        <input
+          type="number"
+          placeholder="Asc"
+          title="Ascender"
+          v-model="font.metrics.ascender"
+        />
+        <input
+          type="number"
+          placeholder="Cap"
+          title="Cap-Height"
+          v-model="font.metrics.capHeight"
+        />
+        <input
+          type="number"
+          placeholder="x"
+          title="x-Height"
+          v-model="font.metrics.xHeight"
+        />
+        <input
+          type="number"
+          placeholder="Des"
+          title="Descender"
+          v-model="font.metrics.descender"
+        />
+      </div>
+    </FormField>
+
     <FormField label="Canvas">
       <div class="size-input">
         <input type="number" min="1" max="128" v-model="font.canvas.width" />×
         <input type="number" min="1" max="128" v-model="font.canvas.height" />
       </div>
     </FormField>
+
+    <details>
+      <summary>Based on</summary>
+      <FormField label="Font">
+        <input />
+      </FormField>
+    </details>
   </div>
 </template>
 
@@ -66,5 +102,11 @@ const font = useFont()
 .inline-checkbox {
   display: flex;
   align-items: center;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
 }
 </style>

@@ -37,6 +37,9 @@ input {
   padding-inline: 0.2em 0.3em;
   min-width: 2ch;
   accent-color: var(--color-accent);
+  &::placeholder {
+    color: var(--color-grid);
+  }
 }
 
 input[type='number'] {

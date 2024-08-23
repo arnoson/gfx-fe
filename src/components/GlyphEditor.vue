@@ -129,6 +129,55 @@ whenever(keys.Ctrl_y, () => font.redo())
           :y2="canvasHeight"
           class="grid"
         />
+        <!-- Baseline -->
+        <line
+          :x1="0"
+          :y1="font.baseline"
+          :x2="canvasWidth"
+          :y2="font.baseline"
+          class="baseline"
+        />
+        <!-- Metrics Guides -->
+        <line
+          v-if="font.metrics.ascender"
+          :x1="0"
+          :y1="font.baseline + font.metrics.ascender"
+          :x2="canvasWidth"
+          :y2="font.baseline + font.metrics.ascender"
+          class="metrics-guide"
+        />
+        <line
+          v-if="font.metrics.capHeight"
+          :x1="0"
+          :y1="font.baseline + font.metrics.capHeight"
+          :x2="canvasWidth"
+          :y2="font.baseline + font.metrics.capHeight"
+          class="metrics-guide"
+        />
+        <line
+          v-if="font.metrics.xHeight"
+          :x1="0"
+          :y1="font.baseline + font.metrics.xHeight"
+          :x2="canvasWidth"
+          :y2="font.baseline + font.metrics.xHeight"
+          class="metrics-guide"
+        />
+        <line
+          v-if="font.metrics.descender"
+          :x1="0"
+          :y1="font.baseline + font.metrics.descender"
+          :x2="canvasWidth"
+          :y2="font.baseline + font.metrics.descender"
+          class="metrics-guide"
+        />
+        <!-- Bounds -->
+        <rect
+          :x="glyph.bounds.left"
+          :y="glyph.bounds.top"
+          :width="glyph.bounds.width"
+          :height="glyph.bounds.height"
+          class="bounds"
+        />
         <!-- Bearings -->
         <rect
           v-if="!!glyph.pixels.size"
@@ -145,22 +194,6 @@ whenever(keys.Ctrl_y, () => font.redo())
           :y="glyph.bounds.top"
           :width="glyph.bearing.right"
           :height="glyph.bounds.height"
-        />
-        <!-- Bounds -->
-        <rect
-          :x="glyph.bounds.left"
-          :y="glyph.bounds.top"
-          :width="glyph.bounds.width"
-          :height="glyph.bounds.height"
-          class="bounds"
-        />
-        <!-- Baseline -->
-        <line
-          :x1="0"
-          :y1="font.baseline"
-          :x2="canvasWidth"
-          :y2="font.baseline"
-          class="baseline"
         />
       </svg>
     </div>
@@ -223,6 +256,12 @@ whenever(keys.Ctrl_y, () => font.redo())
 
   .baseline {
     stroke: var(--color-guide);
+    vector-effect: non-scaling-stroke;
+  }
+
+  .metrics-guide {
+    stroke: var(--color-guide);
+    stroke-dasharray: 3;
     vector-effect: non-scaling-stroke;
   }
 
