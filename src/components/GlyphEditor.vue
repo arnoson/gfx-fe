@@ -8,6 +8,7 @@ import {
 } from '@/utils/pixel'
 import { useElementSize, useMagicKeys, whenever } from '@vueuse/core'
 import { computed, ref } from 'vue'
+import GlyphEditorTools from './GlyphEditorTools.vue'
 
 const font = useFont()
 
@@ -22,6 +23,9 @@ const char = computed(() => {
 const glyph = computed(
   () => font.activeGlyphCode && font.glyphs.get(font.activeGlyphCode),
 )
+
+const glyphGuide = ref<SVGTextElement>()
+const { width: glyphGuideWidth } = useElementSize(glyphGuide)
 
 const canvasWidth = computed(() => font.canvas.width)
 const canvasHeight = computed(() => font.canvas.height)
@@ -85,7 +89,7 @@ whenever(keys.Ctrl_y, () => font.redo())
 </script>
 
 <template>
-  <div class="editor" v-if="glyph">
+  <div class="editor" v-if="font.activeGlyphCode !== undefined && glyph">
     <div class="canvas-container" ref="container">
       <svg
         :viewBox="`0 0 ${canvasWidth} ${canvasHeight}`"
@@ -105,30 +109,32 @@ whenever(keys.Ctrl_y, () => font.redo())
           class="pixel"
         ></rect>
         <!-- Grid -->
-        <rect
-          :x="0"
-          :y="0"
-          :width="canvasWidth"
-          :height="canvasHeight"
-          class="grid"
-        />
-        <line
-          v-for="row in canvasHeight - 1"
-          :hidden="row === font.baseline ? true : undefined"
-          :x1="0"
-          :y1="row"
-          :x2="canvasWidth"
-          :y2="row"
-          class="grid"
-        />
-        <line
-          v-for="column in canvasWidth - 1"
-          :x1="column"
-          :y1="0"
-          :x2="column"
-          :y2="canvasHeight"
-          class="grid"
-        />
+        <g>
+          <rect
+            :x="0"
+            :y="0"
+            :width="canvasWidth"
+            :height="canvasHeight"
+            class="grid"
+          />
+          <line
+            v-for="row in canvasHeight - 1"
+            :hidden="row === font.baseline ? true : undefined"
+            :x1="0"
+            :y1="row"
+            :x2="canvasWidth"
+            :y2="row"
+            class="grid"
+          />
+          <line
+            v-for="column in canvasWidth - 1"
+            :x1="column"
+            :y1="0"
+            :x2="column"
+            :y2="canvasHeight"
+            class="grid"
+          />
+        </g>
         <!-- Baseline -->
         <line
           :x1="0"
@@ -137,39 +143,41 @@ whenever(keys.Ctrl_y, () => font.redo())
           :y2="font.baseline"
           class="baseline"
         />
-        <!-- Metrics Guides -->
-        <line
-          v-if="font.metrics.ascender"
-          :x1="0"
-          :y1="font.baseline + font.metrics.ascender"
-          :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.ascender"
-          class="metrics-guide"
-        />
-        <line
-          v-if="font.metrics.capHeight"
-          :x1="0"
-          :y1="font.baseline + font.metrics.capHeight"
-          :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.capHeight"
-          class="metrics-guide"
-        />
-        <line
-          v-if="font.metrics.xHeight"
-          :x1="0"
-          :y1="font.baseline + font.metrics.xHeight"
-          :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.xHeight"
-          class="metrics-guide"
-        />
-        <line
-          v-if="font.metrics.descender"
-          :x1="0"
-          :y1="font.baseline + font.metrics.descender"
-          :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.descender"
-          class="metrics-guide"
-        />
+        <g>
+          <!-- Metrics Guides -->
+          <line
+            v-if="font.metrics.ascender"
+            :x1="0"
+            :y1="font.baseline + font.metrics.ascender"
+            :x2="canvasWidth"
+            :y2="font.baseline + font.metrics.ascender"
+            class="metrics-guide"
+          />
+          <line
+            v-if="font.metrics.capHeight"
+            :x1="0"
+            :y1="font.baseline + font.metrics.capHeight"
+            :x2="canvasWidth"
+            :y2="font.baseline + font.metrics.capHeight"
+            class="metrics-guide"
+          />
+          <line
+            v-if="font.metrics.xHeight"
+            :x1="0"
+            :y1="font.baseline + font.metrics.xHeight"
+            :x2="canvasWidth"
+            :y2="font.baseline + font.metrics.xHeight"
+            class="metrics-guide"
+          />
+          <line
+            v-if="font.metrics.descender"
+            :x1="0"
+            :y1="font.baseline + font.metrics.descender"
+            :x2="canvasWidth"
+            :y2="font.baseline + font.metrics.descender"
+            class="metrics-guide"
+          />
+        </g>
         <!-- Bounds -->
         <rect
           :x="glyph.bounds.left"
@@ -179,22 +187,34 @@ whenever(keys.Ctrl_y, () => font.redo())
           class="bounds"
         />
         <!-- Bearings -->
-        <rect
-          v-if="!!glyph.pixels.size"
-          class="bearing"
-          :x="glyph.bounds.left - glyph.bearing.left"
-          :y="glyph.bounds.top"
-          :width="glyph.bearing.left"
-          :height="glyph.bounds.height"
-        />
-        <rect
-          v-if="!!glyph.pixels.size"
-          class="bearing"
-          :x="glyph.bounds.left + glyph.bounds.width"
-          :y="glyph.bounds.top"
-          :width="glyph.bearing.right"
-          :height="glyph.bounds.height"
-        />
+        <g>
+          <rect
+            v-if="!!glyph.pixels.size"
+            class="bearing"
+            :x="glyph.bounds.left - glyph.bearing.left"
+            :y="glyph.bounds.top"
+            :width="glyph.bearing.left"
+            :height="glyph.bounds.height"
+          />
+          <rect
+            v-if="!!glyph.pixels.size"
+            class="bearing"
+            :x="glyph.bounds.left + glyph.bounds.width"
+            :y="glyph.bounds.top"
+            :width="glyph.bearing.right"
+            :height="glyph.bounds.height"
+          />
+        </g>
+        <!-- Glyph Guide -->
+        <text
+          v-if="glyph.guide.enabled && font.basedOn.name"
+          ref="glyphGuide"
+          class="glyph-guide"
+          :x="(canvasWidth - glyphGuideWidth / glyphScale) / 2"
+          :y="font.baseline"
+        >
+          {{ String.fromCharCode(font.activeGlyphCode) }}
+        </text>
       </svg>
     </div>
     <div class="panel properties">
@@ -202,6 +222,7 @@ whenever(keys.Ctrl_y, () => font.redo())
       <header>{{ char }}</header>
       <input type="number" v-model="glyph.bearing.right" min="0" />
     </div>
+    <GlyphEditorTools />
   </div>
 </template>
 
@@ -214,7 +235,7 @@ whenever(keys.Ctrl_y, () => font.redo())
 
   /* properties menu size + block margin */
   --properties-height: calc(1.68rem + 2rem);
-  @supports (position-anchor: --preview) {
+  @supports (position-anchor: --canvas) {
     /* Make room for the floating properties menu. */
     padding-bottom: var(--properties-height);
   }
@@ -265,6 +286,23 @@ whenever(keys.Ctrl_y, () => font.redo())
     vector-effect: non-scaling-stroke;
   }
 
+  .glyph-guide {
+    fill: none;
+    stroke: var(--color-guide);
+    /* For some reason non-scaling-stroke affects dash-array different on text,
+    so we have to make it a bit bigger to optically match the metrics-guide. */
+    stroke-dasharray: 6;
+    vector-effect: non-scaling-stroke;
+    font-size: 18pt;
+    mix-blend-mode: difference;
+    /* Increase the stroke slightly, otherwise parts will get lost with the blend mode. */
+    stroke-width: 1.5;
+    font-family: v-bind('font.basedOn.name');
+    font-size: v-bind('`${font.basedOn.size}pt`');
+    pointer-events: none;
+    user-select: none;
+  }
+
   .bearing {
     fill: var(--color-bounds);
     stroke: var(--color-bounds);
@@ -273,7 +311,7 @@ whenever(keys.Ctrl_y, () => font.redo())
 }
 
 .properties {
-  @supports (position-anchor: --preview) {
+  @supports (position-anchor: --canvas) {
     right: anchor(center);
     position: fixed;
     bottom: calc(anchor(bottom) - var(--properties-height));

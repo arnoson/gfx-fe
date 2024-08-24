@@ -8,6 +8,7 @@ import GlyphEditor from './components/GlyphEditor.vue'
 import GlyphList from './components/GlyphList.vue'
 import { useFont } from './stores/font'
 import { packPixel } from './utils/pixel'
+import { measureGlyph } from './utils/text'
 
 const { height } = useWindowSize()
 const font = useFont()

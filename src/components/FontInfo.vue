@@ -66,10 +66,17 @@ const font = useFont()
       </div>
     </FormField>
 
-    <details>
-      <summary>Based on</summary>
+    <details class="flow">
+      <summary>
+        Based on <em>{{ font.basedOn.name }}</em>
+      </summary>
       <FormField label="Font">
-        <input />
+        <input v-model="font.basedOn.name" />
+      </FormField>
+      <FormField label="Size">
+        <div class="size-unit">
+          <input type="number" v-model="font.basedOn.size" />pt
+        </div>
       </FormField>
     </details>
   </div>
@@ -108,5 +115,11 @@ const font = useFont()
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.35rem;
+}
+
+.size-unit {
+  display: grid;
+  grid-template-columns: 1fr max-content;
+  gap: 0.5rem;
 }
 </style>

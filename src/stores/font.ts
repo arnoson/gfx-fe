@@ -13,6 +13,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 import { computed, nextTick, readonly, ref, watch } from 'vue'
 
 export type Glyph = {
+  code: number
   pixels: Set<number>
   bounds: {
     left: number
@@ -23,6 +24,7 @@ export type Glyph = {
     height: number
   }
   bearing: { left: number; right: number }
+  guide: { enabled: boolean }
 }
 
 export const useFont = defineStore('font', () => {
@@ -30,7 +32,7 @@ export const useFont = defineStore('font', () => {
   const glyphs = ref(new Map<number, Glyph>())
   const lineHeight = ref(10)
   const canvas = ref({ width: 16, height: 16 })
-  const baseline = ref(5)
+  const baseline = ref(12)
   const metrics = ref({
     ascender: undefined,
     capHeight: undefined,
@@ -38,7 +40,12 @@ export const useFont = defineStore('font', () => {
     descender: undefined,
   })
   const activeGlyphCode = ref<number | undefined>()
+  const activeGlyph = computed(() => {
+    const code = activeGlyphCode.value
+    return code ? glyphs.value.get(code) : undefined
+  })
   const moveGlyphsWithBaseline = ref(true)
+  const basedOn = ref({ name: 'Vevey Positive', size: 12, guides: true })
 
   const maxHistoryStack = 50
   const glyphHistory = new Map<number, { stack: Pixels[]; index: number }>()
@@ -112,7 +119,13 @@ export const useFont = defineStore('font', () => {
 
   const addGlyph = (code: number, data: Partial<Glyph> = {}) => {
     const { pixels = new Set(), bearing = { left: 0, right: 0 } } = data
-    glyphs.value.set(code, { pixels, bearing, bounds: getBounds(pixels) })
+    glyphs.value.set(code, {
+      code,
+      pixels,
+      bearing,
+      bounds: getBounds(pixels),
+      guide: { enabled: true },
+    })
     glyphHistory.set(code, { index: 0, stack: [] })
   }
 
@@ -132,6 +145,14 @@ export const useFont = defineStore('font', () => {
     if (value) glyph.pixels.add(pixel)
     else glyph.pixels.delete(pixel)
 
+    glyph.bounds = getBounds(glyph.pixels)
+  }
+
+  const clearGlyph = (code: number) => {
+    const glyph = glyphs.value.get(code)
+    if (!glyph) return
+
+    glyph.pixels.clear()
     glyph.bounds = getBounds(glyph.pixels)
   }
 
@@ -257,14 +278,17 @@ export const useFont = defineStore('font', () => {
     name,
     glyphs,
     activeGlyphCode,
+    activeGlyph,
     lineHeight,
     baseline,
     metrics,
+    basedOn,
     moveGlyphsWithBaseline,
     canvas,
     addGlyph,
     removeGlyph,
     setGlyphPixel,
+    clearGlyph,
     addHistoryEntry,
     load,
     save,
