@@ -4,6 +4,7 @@
 @import './panel.css' layer(components);
 @import './field.css' layer(components);
 @import './dialog.css' layer(components);
+@import './code.css' layer(components);
 
 :root {
   --color-background: black;

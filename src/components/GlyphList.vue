@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
 import { computed, ref, watch } from 'vue'
-import NewGlyphDialog from './NewGlyphDialog.vue'
+import AddGlyphsDialog from './AddGlyphsDialog.vue'
 import ModalDialog from './ModalDialog.vue'
 
 const font = useFont()
@@ -15,7 +15,7 @@ const sortedGlyphs = computed(() =>
   Array.from(font.glyphs.entries()).sort(([codeA], [codeB]) => codeA - codeB),
 )
 
-const newGlyphDialog = ref<InstanceType<typeof NewGlyphDialog>>()
+const addGlyphsDialog = ref<InstanceType<typeof AddGlyphsDialog>>()
 const grid = ref<HTMLElement>()
 
 // Scroll the active glyph into view if needed.
@@ -46,7 +46,7 @@ const remove = async (code: number) => {
 
 <template>
   <div class="glyph-list">
-    <NewGlyphDialog ref="newGlyphDialog" />
+    <AddGlyphsDialog ref="addGlyphsDialog" />
     <ModalDialog ref="removeConfirmDialog" v-slot="{ close }">
       <form method="dialog">
         Are you sure?
@@ -61,7 +61,7 @@ const remove = async (code: number) => {
       <h2 v-if="count === 1">1 Glyph</h2>
       <h2 v-else-if="count">{{ count }} Glyphs</h2>
       <h2 v-else>No Glyphs yet</h2>
-      <button class="add" @click="newGlyphDialog?.open()">
+      <button class="add" @click="addGlyphsDialog?.open()">
         <svg
           class="icon"
           xmlns="http://www.w3.org/2000/svg"
@@ -82,12 +82,10 @@ const remove = async (code: number) => {
         :data-char-code="code"
         @keydown.delete="remove(code)"
       >
-        <article class="canvas">
-          <svg :viewBox="`0 0 ${font.canvas.width} ${font.canvas.height}`">
-            <use :href="`#glyph-${code}`" :x="glyph.bounds.left" />
-          </svg>
-          <header class="glyph-name">{{ getCharName(code) }}</header>
-        </article>
+        <svg :viewBox="`0 0 ${font.canvas.width} ${font.canvas.height}`">
+          <use :href="`#glyph-${code}`" :x="glyph.bounds.left" />
+        </svg>
+        <header class="glyph-name">{{ getCharName(code) }}</header>
       </a>
     </div>
   </div>
@@ -112,6 +110,7 @@ const remove = async (code: number) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
   grid-template-rows: max-content;
+  align-items: start;
 
   gap: 0.5rem;
   padding-inline: 1rem;
@@ -124,8 +123,10 @@ const remove = async (code: number) => {
 }
 
 .glyph {
+  --radius: 4px;
+
   border: 1px solid var(--color-grid);
-  border-radius: 4px;
+  border-radius: var(--radius);
 
   &:hover {
     background-color: var(--color-grid);
@@ -138,6 +139,11 @@ const remove = async (code: number) => {
 
   &:focus {
     border-color: var(--color-text);
+  }
+
+  svg {
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
   }
 }
 

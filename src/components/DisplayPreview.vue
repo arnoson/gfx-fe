@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useFont, type Glyph } from '@/stores/font'
+import { useFont } from '@/stores/font'
 import { computed, ref } from 'vue'
 
 const font = useFont()

@@ -36,7 +36,7 @@ onKeyStroke('y', (e) => {
 </script>
 
 <template>
-  <div class="editor" v-if="font.activeGlyphCode !== undefined && glyph">
+  <div class="editor">
     <GlyphEditorCanvas :glyph="glyph" />
     <GlyphEditorTools :glyph="glyph" />
     <div class="panel info">

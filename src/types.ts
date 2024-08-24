@@ -21,3 +21,5 @@ export type Metrics = {
   xHeight?: number
   descender?: number
 }
+
+export type Size = { width: number; height: number }

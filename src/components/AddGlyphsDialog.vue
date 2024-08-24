@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
 import { ref } from 'vue'
-import FormField from './FormField.vue'
+
 import ModalDialog from './ModalDialog.vue'
+import TextField from './TextField.vue'
 
 const font = useFont()
 const dialog = ref<InstanceType<typeof ModalDialog>>()
 const errorDialog = ref<InstanceType<typeof ModalDialog>>()
-
 const characters = ref('')
+const alreadyExistingCodes = ref<number[]>([])
 
 const characterToCode = (character: string) =>
   character.startsWith('\\u')
@@ -29,8 +30,6 @@ const charactersToCode = (characters: string[]) => {
   }
   return codes
 }
-
-const alreadyExistingCodes = ref<number[]>([])
 
 const add = async () => {
   const codes =
@@ -62,16 +61,15 @@ defineExpose({ open })
   <!-- For some reasons the mousemove events are propagated to the resize
    handlers of the split pane. Stopping them here solves the problem. -->
   <ModalDialog ref="dialog" @mousemove.stop v-slot="{ close }">
-    <form method="dialog">
-      <FormField label="Glyphs" class="glyphs-field">
-        <input v-model="characters" aria-describedby="input-characters-help" />
-      </FormField>
-      <div class="info" id="input-characters-help">
-        Use multiple characters separated by spaces
-        <span class="code">A B C</span>, unicode notation
-        <span class="code">\u003F</span> and ranges
-        <span class="code">a-z 0-9 \u0041-\u005A</span>.
-      </div>
+    <form method="dialog" class="flow">
+      <TextField label="Glyphs" v-model="characters">
+        <template #info>
+          Use multiple characters separated by spaces
+          <span class="code">A B C</span>, unicode notation
+          <span class="code">\u003F</span> and ranges
+          <span class="code">a-z 0-9 \u0041-\u005A</span>.
+        </template>
+      </TextField>
       <menu>
         <button type="reset" @click="close">Cancel</button>
         <button type="submit" value="submit" data-theme="positive" @click="add">
@@ -82,7 +80,7 @@ defineExpose({ open })
   </ModalDialog>
 
   <ModalDialog ref="errorDialog" v-slot="{ close }">
-    <form method="dialog">
+    <form method="dialog" class="flow">
       <div v-if="alreadyExistingCodes.length === 1">
         The
         <span class="code">
@@ -121,30 +119,5 @@ dialog {
     /* Optically align the field label to the baseline of the add glyphs button */
     top: calc(anchor(top) - 0.6rem);
   }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-}
-
-.glyphs-field {
-  grid-template-columns: max-content 1fr;
-}
-
-.info {
-  color: hsl(0 0% 50% / 1);
-  padding-inline: 0.5rem;
-}
-
-.code {
-  background-color: hsl(0 0% 45% / 1);
-  color: black;
-  padding-inline: 0.2em 0.3em;
-  border-radius: 3px;
-  white-space: pre;
-  /* In case they overlap. */
-  border: 1px solid var(--color-background);
 }
 </style>

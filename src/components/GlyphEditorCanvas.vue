@@ -61,6 +61,7 @@ const draw = (e: MouseEvent) => {
 }
 
 const endDraw = () => {
+  if (!isDrawing) return
   isDrawing = false
   history.saveState(glyph.value.code)
 }
@@ -83,6 +84,7 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
       @mousedown="startDraw"
       @mousemove="draw"
       @mouseup="endDraw"
+      @mouseleave="endDraw"
     >
       <!-- Pixels  -->
       <rect
@@ -193,7 +195,7 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
       </g>
       <!-- Glyph Guide -->
       <text
-        v-if="glyph.guide.enabled && font.basedOn.name"
+        v-if="glyph.guide.enabled && font.basedOn.name && scale"
         ref="glyphGuide"
         class="glyph-guide"
         :x="(canvasWidth - glyphGuideWidth / scale) / 2"
