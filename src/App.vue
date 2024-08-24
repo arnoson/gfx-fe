@@ -7,8 +7,6 @@ import GlyphDefs from './components/GlyphDefs.vue'
 import GlyphEditor from './components/GlyphEditor.vue'
 import GlyphList from './components/GlyphList.vue'
 import { useFont } from './stores/font'
-import { packPixel } from './utils/pixel'
-import { measureGlyph } from './utils/text'
 
 const { height } = useWindowSize()
 const font = useFont()
@@ -28,9 +26,8 @@ useEventListener(
   () => (font.activeGlyphCode = getGlyphUrlParam()),
 )
 
-font.addGlyph(35, { pixels: new Set([packPixel(5, 5)]) })
+font.addGlyph(35)
 font.activeGlyphCode = 35
-font.addHistoryEntry()
 </script>
 
 <template>
@@ -48,7 +45,7 @@ font.addHistoryEntry()
     <SplitterPanel id="panel-content">
       <SplitterGroup direction="vertical">
         <SplitterPanel id="panel-editor">
-          <GlyphEditor />
+          <GlyphEditor v-if="font.activeGlyph" :glyph="font.activeGlyph" />
         </SplitterPanel>
         <SplitterResizeHandle
           id="panel-editor:panel-preview"

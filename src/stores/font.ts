@@ -1,3 +1,4 @@
+import type { Glyph, Metrics } from '@/types'
 import { getBit, setBit } from '@/utils/bit'
 import { downloadFile } from '@/utils/file'
 import { parseFont, serializeFont, type GfxGlyph } from '@/utils/font'
@@ -6,95 +7,29 @@ import {
   getBounds,
   packPixel,
   translatePixels,
-  unpackPixel,
   type Pixels,
 } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { computed, nextTick, readonly, ref, watch } from 'vue'
-
-export type Glyph = {
-  code: number
-  pixels: Set<number>
-  bounds: {
-    left: number
-    right: number
-    top: number
-    bottom: number
-    width: number
-    height: number
-  }
-  bearing: { left: number; right: number }
-  guide: { enabled: boolean }
-}
+import { computed, nextTick, ref, watch } from 'vue'
+import { useHistory } from './history'
 
 export const useFont = defineStore('font', () => {
   const name = ref('New Font')
-  const glyphs = ref(new Map<number, Glyph>())
-  const lineHeight = ref(10)
   const canvas = ref({ width: 16, height: 16 })
+  const lineHeight = ref(10)
   const baseline = ref(12)
-  const metrics = ref({
-    ascender: undefined,
-    capHeight: undefined,
-    xHeight: undefined,
-    descender: undefined,
-  })
+  const moveGlyphsWithBaseline = ref(true)
+  const metrics = ref<Metrics>({})
+  const basedOn = ref({ name: 'Vevey Positive', size: 12, guides: true })
+
+  const glyphs = ref(new Map<number, Glyph>())
   const activeGlyphCode = ref<number | undefined>()
   const activeGlyph = computed(() => {
     const code = activeGlyphCode.value
     return code ? glyphs.value.get(code) : undefined
   })
-  const moveGlyphsWithBaseline = ref(true)
-  const basedOn = ref({ name: 'Vevey Positive', size: 12, guides: true })
 
-  const maxHistoryStack = 50
-  const glyphHistory = new Map<number, { stack: Pixels[]; index: number }>()
-
-  const undo = () => {
-    if (!activeGlyphCode.value) return
-
-    const history = glyphHistory.get(activeGlyphCode.value)
-    if (!history || !history.stack.length || history.index < 1) return
-
-    const activeGlyph = glyphs.value.get(activeGlyphCode.value)
-    if (!activeGlyph) return
-
-    history.index--
-    activeGlyph.pixels = new Set(history.stack.at(history.index))
-    activeGlyph.bounds = getBounds(activeGlyph.pixels)
-  }
-
-  const redo = () => {
-    if (!activeGlyphCode.value) return
-    const history = glyphHistory.get(activeGlyphCode.value)
-    if (!history || history.index >= history.stack.length - 1) return
-
-    const activeGlyph = glyphs.value.get(activeGlyphCode.value)
-    if (!activeGlyph) return
-
-    history.index++
-    activeGlyph.pixels = new Set(history.stack.at(history.index))
-    activeGlyph.bounds = getBounds(activeGlyph.pixels)
-  }
-
-  const addHistoryEntry = (code = activeGlyphCode.value) => {
-    if (code === undefined) return
-    const glyph = glyphs.value.get(code)
-    if (!glyph) return
-
-    const history = glyphHistory.get(code)
-    if (!history) return
-
-    // We undo-ed into history and because we start a new future we have to
-    // delete the existing future stack.
-    if (history.index < history.stack.length - 1) {
-      history.stack.splice(history.index + 1)
-    }
-
-    history.stack.push(new Set(glyph.pixels))
-    if (history.stack.length > maxHistoryStack) history.stack.shift()
-    history.index = history.stack.length - 1
-  }
+  const history = useHistory()
 
   watch(
     () => canvas.value.width,
@@ -126,25 +61,23 @@ export const useFont = defineStore('font', () => {
       bounds: getBounds(pixels),
       guide: { enabled: true },
     })
-    glyphHistory.set(code, { index: 0, stack: [] })
+    history.add(code)
+    history.saveState(code)
   }
 
   const removeGlyph = (code: number) => {
     glyphs.value.delete(code)
-    glyphHistory.delete(code)
+    history.remove(code)
   }
 
-  const setGlyphPixel = (code: number, pixel: number, value: boolean) => {
-    const glyph = glyphs.value.get(code)
-    if (!glyph) return
-
-    // Break if the pixel already has the specified value.
-    if (value && glyph.pixels.has(pixel)) return
-    if (!value && !glyph.pixels.has(pixel)) return
-
+  const setGlyphPixel = (glyph: Glyph, pixel: number, value: boolean) => {
     if (value) glyph.pixels.add(pixel)
     else glyph.pixels.delete(pixel)
+    glyph.bounds = getBounds(glyph.pixels)
+  }
 
+  const setGlyphPixels = (glyph: Glyph, pixels: Pixels) => {
+    glyph.pixels = pixels
     glyph.bounds = getBounds(glyph.pixels)
   }
 
@@ -194,7 +127,6 @@ export const useFont = defineStore('font', () => {
         right: glyph.xAdvance - glyph.width - glyph.deltaX,
       }
       addGlyph(charCode, { pixels, bearing })
-      addHistoryEntry(charCode)
       charCode++
     }
   }
@@ -288,12 +220,10 @@ export const useFont = defineStore('font', () => {
     addGlyph,
     removeGlyph,
     setGlyphPixel,
+    setGlyphPixels,
     clearGlyph,
-    addHistoryEntry,
     load,
     save,
-    undo,
-    redo,
   }
 })
 

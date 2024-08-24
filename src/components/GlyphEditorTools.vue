@@ -1,34 +1,35 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
-import { getBounds, translatePixels } from '@/utils/pixel'
+import { useHistory } from '@/stores/history'
+import type { Glyph } from '@/types'
+import { translatePixels } from '@/utils/pixel'
 import { measureGlyph, renderGlyph } from '@/utils/text'
+import { toRefs } from 'vue'
+
+const props = defineProps<{ glyph: Glyph }>()
+const { glyph } = toRefs(props)
 
 const font = useFont()
+const history = useHistory()
 
 const clear = () => {
-  const code = font.activeGlyphCode
-  if (code === undefined) return
-
-  font.clearGlyph(code)
-  font.addHistoryEntry(code)
+  font.clearGlyph(glyph.value.code)
+  history.saveState(glyph.value.code)
 }
 
 const fill = () => {
-  const glyph = font.activeGlyph
-  if (!glyph) return
+  const { bearing } = measureGlyph(glyph.value.code)
+  glyph.value.bearing = bearing
 
-  const { bearing } = measureGlyph(glyph.code)
-  glyph.bearing = bearing
+  const pixels = renderGlyph(glyph.value.code)
+  font.setGlyphPixels(glyph.value, pixels)
 
-  const pixels = renderGlyph(glyph.code)
-
-  glyph.pixels = pixels
-  glyph.bounds = getBounds(pixels)
-  const { left, width } = glyph.bounds
+  const { left, width } = glyph.value.bounds
   const centeredLeft = Math.round((font.canvas.width - width) / 2)
-  glyph.pixels = translatePixels(pixels, centeredLeft - left, 0)
-  glyph.bounds = getBounds(glyph.pixels)
-  font.addHistoryEntry(glyph.code)
+  const centeredPixels = translatePixels(pixels, centeredLeft - left, 0)
+  font.setGlyphPixels(glyph.value, centeredPixels)
+
+  history.saveState(glyph.value.code)
 }
 </script>
 

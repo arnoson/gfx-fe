@@ -1,34 +1,27 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
+import { useHistory } from '@/stores/history'
+import type { Glyph } from '@/types'
 import {
   packPixel,
   pixelIsCropped,
   unpackPixelX,
   unpackPixelY,
 } from '@/utils/pixel'
-import {
-  useActiveElement,
-  useElementSize,
-  useMagicKeys,
-  whenever,
-} from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { onKeyStroke, useActiveElement, useElementSize } from '@vueuse/core'
+import { computed, ref, toRefs } from 'vue'
 import GlyphEditorTools from './GlyphEditorTools.vue'
-import { logicAnd } from '@vueuse/math'
+
+const props = defineProps<{ glyph: Glyph }>()
+const { glyph } = toRefs(props)
 
 const font = useFont()
+const history = useHistory()
 
 const char = computed(() => {
-  const code = font.activeGlyphCode
-  if (code === undefined) return
-
-  const char = String.fromCharCode(code)
+  const char = String.fromCharCode(glyph.value.code)
   return char === ' ' ? 'Space' : char
 })
-
-const glyph = computed(
-  () => font.activeGlyphCode && font.glyphs.get(font.activeGlyphCode),
-)
 
 const glyphGuide = ref<SVGTextElement>()
 const { width: glyphGuideWidth } = useElementSize(glyphGuide)
@@ -66,18 +59,18 @@ const startDraw = (e: MouseEvent) => {
   const pixel = mouseToPixel(e)
   // Toggle the color.
   drawingPixelValue = !glyph.value.pixels.has(pixel)
-  font.setGlyphPixel(font.activeGlyphCode, pixel, drawingPixelValue)
+  font.setGlyphPixel(glyph.value, pixel, drawingPixelValue)
 }
 
 const draw = (e: MouseEvent) => {
-  if (!font.activeGlyphCode || !isDrawing) return
+  if (!isDrawing) return
   const pixel = mouseToPixel(e)
-  font.setGlyphPixel(font.activeGlyphCode, pixel, drawingPixelValue)
+  font.setGlyphPixel(glyph.value, pixel, drawingPixelValue)
 }
 
 const endDraw = () => {
   isDrawing = false
-  font.addHistoryEntry()
+  history.saveState(glyph.value.code)
 }
 
 const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
@@ -89,15 +82,21 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   return packPixel(x, y)
 }
 
-const { Ctrl_z, Ctrl_y } = useMagicKeys()
 const activeElement = useActiveElement()
-const notUsingInput = computed(
-  () =>
-    activeElement.value?.tagName !== 'INPUT' &&
-    activeElement.value?.tagName !== 'TEXTAREA',
-)
-whenever(logicAnd(Ctrl_z, notUsingInput), () => font.undo())
-whenever(logicAnd(Ctrl_y, notUsingInput), () => font.redo())
+const activeElementIsInput = computed(() => {
+  const tagName = activeElement.value?.tagName
+  return tagName === 'INPUT' || tagName === 'TEXTAREA'
+})
+
+onKeyStroke('z', (e) => {
+  if (!e.ctrlKey || activeElementIsInput.value) return
+  history.undo(glyph.value.code)
+})
+
+onKeyStroke('y', (e) => {
+  if (!e.ctrlKey || activeElementIsInput.value) return
+  history.redo(glyph.value.code)
+})
 </script>
 
 <template>
@@ -234,7 +233,7 @@ whenever(logicAnd(Ctrl_y, notUsingInput), () => font.redo())
       <header>{{ char }}</header>
       <input type="number" v-model="glyph.bearing.right" min="0" />
     </div>
-    <GlyphEditorTools />
+    <GlyphEditorTools :glyph="glyph" />
   </div>
 </template>
 
