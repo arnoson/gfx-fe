@@ -6,9 +6,15 @@ import {
   unpackPixelX,
   unpackPixelY,
 } from '@/utils/pixel'
-import { useElementSize, useMagicKeys, whenever } from '@vueuse/core'
+import {
+  useActiveElement,
+  useElementSize,
+  useMagicKeys,
+  whenever,
+} from '@vueuse/core'
 import { computed, ref } from 'vue'
 import GlyphEditorTools from './GlyphEditorTools.vue'
+import { logicAnd } from '@vueuse/math'
 
 const font = useFont()
 
@@ -83,9 +89,15 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   return packPixel(x, y)
 }
 
-const keys = useMagicKeys()
-whenever(keys.Ctrl_z, () => font.undo())
-whenever(keys.Ctrl_y, () => font.redo())
+const { Ctrl_z, Ctrl_y } = useMagicKeys()
+const activeElement = useActiveElement()
+const notUsingInput = computed(
+  () =>
+    activeElement.value?.tagName !== 'INPUT' &&
+    activeElement.value?.tagName !== 'TEXTAREA',
+)
+whenever(logicAnd(Ctrl_z, notUsingInput), () => font.undo())
+whenever(logicAnd(Ctrl_y, notUsingInput), () => font.redo())
 </script>
 
 <template>
