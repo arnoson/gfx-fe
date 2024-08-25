@@ -13,7 +13,7 @@ const id = getInputId()
     <div class="inputs">
       <input :id="id" type="number" min="0" v-model="value" />
       <label class="move-glyphs">
-        Move Glyphs
+        <div class="label-text">Move Glyphs</div>
         <input type="checkbox" v-model="moveGlyphs" />
       </label>
     </div>
@@ -22,13 +22,23 @@ const id = getInputId()
 
 <style scoped>
 .inputs {
-  display: grid;
-  grid-template-columns: 1fr max-content;
+  display: flex;
+  overflow: hidden;
   gap: 0.5rem;
+
+  input {
+    flex: 1;
+  }
 }
 
 .move-glyphs {
   display: flex;
   align-items: center;
+
+  .label-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
 }
 </style>

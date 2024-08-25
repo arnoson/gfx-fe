@@ -87,15 +87,17 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
       @mouseleave="endDraw"
     >
       <!-- Pixels  -->
-      <rect
-        v-for="pixel of glyph.pixels"
-        :x="unpackPixelX(pixel)"
-        :y="unpackPixelY(pixel)"
-        :data-cropped="pixelIsCropped(pixel, canvasWidth, canvasHeight)"
-        width="1"
-        height="1"
-        class="pixel"
-      ></rect>
+      <g>
+        <rect
+          v-for="pixel of glyph.pixels"
+          :x="unpackPixelX(pixel)"
+          :y="unpackPixelY(pixel)"
+          :data-cropped="pixelIsCropped(pixel, canvasWidth, canvasHeight)"
+          width="1"
+          height="1"
+          class="pixel"
+        ></rect>
+      </g>
       <!-- Grid -->
       <g>
         <rect

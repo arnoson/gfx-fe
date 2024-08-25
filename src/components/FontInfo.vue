@@ -38,6 +38,7 @@ const font = useFont()
 
 <style scoped>
 .font-info {
+  padding-top: 1rem;
   padding-inline: 1rem;
 }
 

@@ -52,7 +52,10 @@ const add = async () => {
   font.activeGlyphCode = codes[0]
 }
 
-const open = () => dialog.value?.prompt()
+const open = () => {
+  characters.value = ''
+  dialog.value?.open()
+}
 
 defineExpose({ open })
 </script>

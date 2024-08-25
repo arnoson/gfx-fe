@@ -95,6 +95,7 @@ const remove = async (code: number) => {
 .header {
   padding-inline: 1rem;
   padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -150,9 +151,11 @@ const remove = async (code: number) => {
 .add {
   background: none;
   padding: 0;
+  border-radius: 9999px;
   anchor-name: --add-glyph-button;
 
   .icon {
+    display: block;
     height: 1.8em;
     width: auto;
   }
