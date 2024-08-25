@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFont } from '@/stores/font'
-import BaselineField from './BaselineField.vue'
+import NumberCheckField from './NumberCheckField.vue'
 import FontUpload from './FontUpload.vue'
 import MetricsField from './MetricsField.vue'
 import NumberField from './NumberField.vue'
@@ -19,10 +19,11 @@ const font = useFont()
 
     <TextField label="Name" v-model="font.name" />
     <NumberField label="Line Height" :min="1" v-model="font.lineHeight" />
-    <BaselineField
+    <NumberCheckField
       label="Baseline"
+      label-check="Move Glyphs"
       v-model:value="font.baseline"
-      v-model:move-glyphs="font.moveGlyphsWithBaseline"
+      v-model:check="font.moveGlyphsWithBaseline"
     />
     <MetricsField label="Metrics" v-model="font.metrics" />
     <SizeField label="Canvas" v-model="font.canvas" :min="1" :max="128" />

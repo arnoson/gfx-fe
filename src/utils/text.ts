@@ -52,8 +52,6 @@ export const renderGlyph = (code: number): Pixels => {
   // round, since we render our text black on white.
   const thresholdInverse = 255 - threshold
 
-  console.log(threshold)
-
   const pixels = new Set<number>()
   for (var i = 0; i < data.length; i += 4) {
     const g = data[i + 1]
