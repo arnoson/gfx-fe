@@ -33,7 +33,7 @@ export const measureGlyph = (code: number) => {
 
 export const renderGlyph = (code: number): Pixels => {
   const font = useFont()
-  const { name, size } = font.basedOn
+  const { name, size, threshold } = font.basedOn
 
   const char = String.fromCharCode(code)
 
@@ -48,7 +48,11 @@ export const renderGlyph = (code: number): Pixels => {
   ctx.fillText(char, 0, font.baseline)
 
   const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const threshold = 125
+  // Threshold is between black and white, but we need it to be to other way
+  // round, since we render our text black on white.
+  const thresholdInverse = 255 - threshold
+
+  console.log(threshold)
 
   const pixels = new Set<number>()
   for (var i = 0; i < data.length; i += 4) {
@@ -58,7 +62,7 @@ export const renderGlyph = (code: number): Pixels => {
 
     // Calculate grayscale value using luminance formula.
     const gray = 0.299 * r + 0.587 * g + 0.114 * b
-    if (gray > threshold) continue
+    if (gray > thresholdInverse) continue
 
     const pixelIndex = i / 4
     const x = pixelIndex % canvas.width

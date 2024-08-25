@@ -6,6 +6,7 @@ import MetricsField from './MetricsField.vue'
 import NumberField from './NumberField.vue'
 import SizeField from './SizeField.vue'
 import TextField from './TextField.vue'
+import SliderField from './SliderField.vue'
 const font = useFont()
 </script>
 
@@ -32,6 +33,12 @@ const font = useFont()
       </summary>
       <TextField label="Font" v-model="font.basedOn.name" />
       <NumberField label="Size" v-model="font.basedOn.size" unit="px" />
+      <SliderField
+        label="Threshold"
+        :min="1"
+        :max="254"
+        v-model="font.basedOn.threshold"
+      />
     </details>
   </div>
 </template>

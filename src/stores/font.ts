@@ -20,7 +20,12 @@ export const useFont = defineStore('font', () => {
   const baseline = ref(12)
   const moveGlyphsWithBaseline = ref(true)
   const metrics = ref<Metrics>({})
-  const basedOn = ref({ name: 'Vevey Positive', size: 12, guides: true })
+  const basedOn = ref({
+    name: 'Vevey Positive',
+    size: 12,
+    guides: true,
+    threshold: 125,
+  })
 
   const glyphs = ref(new Map<number, Glyph>())
   const activeGlyphCode = ref<number | undefined>()
