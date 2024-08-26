@@ -1,7 +1,6 @@
-import { acceptHMRUpdate, defineStore } from 'pinia'
-import { useFont } from './font'
-import { getBounds } from '@/utils/pixel'
 import type { Glyph } from '@/types'
+import { getBounds } from '@/utils/pixel'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 
 // Right now, we only support undo/redo for glyphs.
 type GlyphState = {
@@ -14,30 +13,27 @@ type History = {
   stack: GlyphState[]
 }
 
-type Key = number
+const cloneState = ({ pixels, bearing }: GlyphState) => ({
+  pixels: pixels ? new Set(pixels) : undefined,
+  bearing: bearing ? { left: bearing.left, right: bearing.right } : undefined,
+})
 
 export const useHistory = defineStore('history', () => {
-  const histories = new Map<Key, History>()
+  const histories = new Map<number, History>()
   const maxStackSize = 50
-  const font = useFont()
 
-  const add = (key: Key) => histories.set(key, { index: 0, stack: [] })
-  const remove = (key: Key) => histories.delete(key)
+  const add = (code: number) => histories.set(code, { index: 0, stack: [] })
+  const remove = (code: number) => histories.delete(code)
 
-  const undo = (key: Key) => {
-    console.log('undo!')
-
-    const history = histories.get(key)
+  const undo = (glyph: Glyph) => {
+    const history = histories.get(glyph.code)
     if (!history || !history.stack.length || history.index < 1) return
-
-    const glyph = font.glyphs.get(key)
-    if (!glyph) return
 
     history.index--
     const state = history.stack.at(history.index)
     if (!state) return
 
-    const { pixels, bearing } = state
+    const { pixels, bearing } = cloneState(state)
     if (pixels) {
       glyph.pixels = pixels
       glyph.bounds = getBounds(pixels)
@@ -45,31 +41,25 @@ export const useHistory = defineStore('history', () => {
     if (bearing) glyph.bearing = bearing
   }
 
-  const redo = (key: Key) => {
-    const history = histories.get(key)
+  const redo = (glyph: Glyph) => {
+    const history = histories.get(glyph.code)
     if (!history || history.index >= history.stack.length - 1) return
-
-    const glyph = font.glyphs.get(key)
-    if (!glyph) return
 
     history.index++
     const state = history.stack.at(history.index)
     if (!state) return
 
-    const { pixels, bearing } = state
+    const { pixels, bearing } = cloneState(state)
     if (pixels) {
-      glyph.pixels = pixels
+      glyph.pixels = new Set(pixels)
       glyph.bounds = getBounds(pixels)
     }
     if (bearing) glyph.bearing = bearing
   }
 
-  const saveState = (key: Key) => {
-    let history = histories.get(key)
+  const saveState = (glyph: Glyph) => {
+    let history = histories.get(glyph.code)
     if (!history) return
-
-    const glyph = font.glyphs.get(key)
-    if (!glyph) return
 
     // We undo-ed into history and because we start a new future we have to
     // delete the existing future stack.
@@ -77,11 +67,7 @@ export const useHistory = defineStore('history', () => {
       history.stack.splice(history.index + 1)
     }
 
-    const clonedState = {
-      pixels: new Set(glyph.pixels),
-      bearing: { left: glyph.bearing.left, right: glyph.bearing.right },
-    }
-    history.stack.push(clonedState)
+    history.stack.push(cloneState(glyph))
 
     if (history.stack.length > maxStackSize) history.stack.shift()
     history.index = history.stack.length - 1

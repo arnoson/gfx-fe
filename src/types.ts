@@ -1,3 +1,5 @@
+import type { Ref } from 'vue'
+
 export type Bounds = {
   left: number
   right: number
@@ -23,3 +25,19 @@ export type Metrics = {
 }
 
 export type Size = { width: number; height: number }
+
+export type ToolContext = {
+  glyph: Ref<Glyph>
+}
+
+export interface Tool {
+  onMouseDown?: (point: Point) => unknown
+  onMouseMove?: (point: Point) => unknown
+  onMouseUp?: (point: Point) => unknown
+  onKeyDown?: (e: KeyboardEvent) => unknown
+}
+
+export type Point = {
+  x: number
+  y: number
+}

@@ -3,8 +3,10 @@ import { useFont } from '@/stores/font'
 import { computed, ref, watch } from 'vue'
 import AddGlyphsDialog from './AddGlyphsDialog.vue'
 import ModalDialog from './ModalDialog.vue'
+import { useEditor } from '@/stores/editor'
 
 const font = useFont()
+const editor = useEditor()
 const count = computed(() => font.glyphs.size)
 const getCharName = (code: number) => {
   const char = String.fromCharCode(code)
@@ -82,7 +84,7 @@ const remove = async (code: number) => {
         :data-char-code="code"
         @keydown.delete="remove(code)"
       >
-        <svg :viewBox="`0 0 ${font.canvas.width} ${font.canvas.height}`">
+        <svg :viewBox="`0 0 ${editor.canvas.width} ${editor.canvas.height}`">
           <use :href="`#glyph-${code}`" :x="glyph.bounds.left" />
         </svg>
         <header class="glyph-name">{{ getCharName(code) }}</header>

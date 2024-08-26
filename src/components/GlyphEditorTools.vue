@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
 import { useHistory } from '@/stores/history'
 import type { Glyph } from '@/types'
@@ -11,11 +12,7 @@ const { glyph } = toRefs(props)
 
 const font = useFont()
 const history = useHistory()
-
-const clear = () => {
-  font.clearGlyph(glyph.value.code)
-  history.saveState(glyph.value.code)
-}
+const editor = useEditor()
 
 const fill = () => {
   const { bearing } = measureGlyph(glyph.value.code)
@@ -25,17 +22,18 @@ const fill = () => {
   font.setGlyphPixels(glyph.value, pixels)
 
   const { left, width } = glyph.value.bounds
-  const centeredLeft = Math.round((font.canvas.width - width) / 2)
+  const centeredLeft = Math.round((editor.canvas.width - width) / 2)
   const centeredPixels = translatePixels(pixels, centeredLeft - left, 0)
   font.setGlyphPixels(glyph.value, centeredPixels)
 
-  history.saveState(glyph.value.code)
+  history.saveState(glyph.value)
 }
 </script>
 
 <template>
   <menu class="tools panel">
-    <button @click="clear">C</button>
+    <button @click="editor.activeToolName = 'draw'">D</button>
+    <button @click="editor.activeToolName = 'select'">S</button>
     <button @click="fill">A</button>
   </menu>
 </template>

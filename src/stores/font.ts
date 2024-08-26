@@ -10,19 +10,19 @@ import {
   type Pixels,
 } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, toValue, watch, type MaybeRef } from 'vue'
 import { useHistory } from './history'
+import { useEditor } from './editor'
 
 export const useFont = defineStore('font', () => {
   const name = ref('New Font')
-  const canvas = ref({ width: 16, height: 16 })
   const lineHeight = ref(10)
-  const baseline = ref(12)
+  const baseline = ref(17)
   const moveGlyphsWithBaseline = ref(true)
   const metrics = ref<Metrics>({})
   const basedOn = ref({
     name: 'Vevey Positive',
-    size: 12,
+    size: 17,
     guides: true,
     threshold: 125,
   })
@@ -34,10 +34,11 @@ export const useFont = defineStore('font', () => {
     return code ? glyphs.value.get(code) : undefined
   })
 
+  const editor = useEditor()
   const history = useHistory()
 
   watch(
-    () => canvas.value.width,
+    () => editor.canvas.width,
     (canvasWidth) => {
       for (const [_, glyph] of glyphs.value) {
         const { left, width } = getBounds(glyph.pixels)
@@ -57,17 +58,18 @@ export const useFont = defineStore('font', () => {
     }
   })
 
-  const addGlyph = (code: number, data: Partial<Glyph> = {}) => {
-    const { pixels = new Set(), bearing = { left: 0, right: 0 } } = data
-    glyphs.value.set(code, {
+  const addGlyph = (data: Partial<Glyph> & Required<Pick<Glyph, 'code'>>) => {
+    const { code, pixels = new Set(), bearing = { left: 0, right: 0 } } = data
+    const glyph = {
       code,
       pixels,
       bearing,
       bounds: getBounds(pixels),
       guide: { enabled: true },
-    })
+    }
+    glyphs.value.set(code, glyph)
     history.add(code)
-    history.saveState(code)
+    history.saveState(glyph)
   }
 
   const removeGlyph = (code: number) => {
@@ -101,7 +103,8 @@ export const useFont = defineStore('font', () => {
 
     name.value = font.name
     lineHeight.value = font.yAdvance
-    canvas.value = { width: font.yAdvance, height: font.yAdvance }
+    editor.canvas.width = font.yAdvance
+    editor.canvas.height = font.yAdvance
     baseline.value = 20
     // Setting the canvas size and baseline will trigger watchers, so we wait
     // for the next tick and continue when the watchers have finished.
@@ -109,7 +112,7 @@ export const useFont = defineStore('font', () => {
 
     for (const glyph of font.glyphs) {
       const pixels = new Set<number>()
-      const left = Math.floor((canvas.value.width - glyph.width) / 2)
+      const left = Math.floor((editor.canvas.width - glyph.width) / 2)
 
       for (let y = 0; y < glyph.height; y++) {
         for (let x = 0; x < glyph.width; x++) {
@@ -131,13 +134,13 @@ export const useFont = defineStore('font', () => {
         left: glyph.deltaX,
         right: glyph.xAdvance - glyph.width - glyph.deltaX,
       }
-      addGlyph(charCode, { pixels, bearing })
+      addGlyph({ code: charCode, pixels, bearing })
       charCode++
     }
   }
 
   const save = () => {
-    const { width: canvasWidth, height: canvasHeight } = canvas.value
+    const { width: canvasWidth, height: canvasHeight } = editor.canvas
 
     const croppedGlyphs = new Map(
       Array.from(glyphs.value.entries()).map(([code, glyph]) => {
@@ -221,7 +224,6 @@ export const useFont = defineStore('font', () => {
     metrics,
     basedOn,
     moveGlyphsWithBaseline,
-    canvas,
     addGlyph,
     removeGlyph,
     setGlyphPixel,

@@ -26,7 +26,7 @@ useEventListener(
   () => (font.activeGlyphCode = getGlyphUrlParam()),
 )
 
-font.addGlyph(35)
+font.addGlyph({ code: 35 })
 font.activeGlyphCode = 35
 </script>
 

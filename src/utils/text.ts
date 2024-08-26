@@ -1,5 +1,6 @@
 import { useFont } from '@/stores/font'
 import { packPixel, type Pixels } from './pixel'
+import { useEditor } from '@/stores/editor'
 
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d', { willReadFrequently: true })!
@@ -7,7 +8,8 @@ canvas.width = 128
 canvas.height = 128
 canvas.style.background = 'white'
 
-document.body.append(canvas)
+// Useful for debugging:
+// document.body.append(canvas)
 
 export const measureGlyph = (code: number) => {
   const font = useFont()
@@ -31,23 +33,12 @@ export const measureGlyph = (code: number) => {
   }
 }
 
-export const renderGlyph = (code: number): Pixels => {
-  const font = useFont()
-  const { name, size, threshold } = font.basedOn
-
-  const char = String.fromCharCode(code)
-
-  canvas.width = font.canvas.width
-  canvas.height = font.canvas.height
-
-  ctx.fillStyle = 'white'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  ctx.fillStyle = 'black'
-  ctx.font = `${size}pt '${name}'`
-  ctx.fillText(char, 0, font.baseline)
-
-  const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height)
+export const ctxToPixels = (
+  ctx: CanvasRenderingContext2D,
+  threshold = 127,
+): Pixels => {
+  const { width, height } = ctx.canvas
+  const { data } = ctx.getImageData(0, 0, width, height)
   // Threshold is between black and white, but we need it to be to other way
   // round, since we render our text black on white.
   const thresholdInverse = 255 - threshold
@@ -63,11 +54,31 @@ export const renderGlyph = (code: number): Pixels => {
     if (gray > thresholdInverse) continue
 
     const pixelIndex = i / 4
-    const x = pixelIndex % canvas.width
-    const y = Math.floor(pixelIndex / canvas.width)
+    const x = pixelIndex % width
+    const y = Math.floor(pixelIndex / width)
 
     pixels.add(packPixel(x, y))
   }
 
   return pixels
+}
+
+export const renderGlyph = (code: number): Pixels => {
+  const font = useFont()
+  const editor = useEditor()
+  const { name, size, threshold } = font.basedOn
+
+  const char = String.fromCharCode(code)
+
+  canvas.width = editor.canvas.width
+  canvas.height = editor.canvas.height
+
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  ctx.fillStyle = 'black'
+  ctx.font = `${size}pt '${name}'`
+  ctx.fillText(char, 0, font.baseline)
+
+  return ctxToPixels(ctx, threshold)
 }

@@ -7,7 +7,10 @@ import NumberField from './NumberField.vue'
 import SizeField from './SizeField.vue'
 import TextField from './TextField.vue'
 import SliderField from './SliderField.vue'
+import { useEditor } from '@/stores/editor'
+
 const font = useFont()
+const editor = useEditor()
 </script>
 
 <template>
@@ -26,7 +29,7 @@ const font = useFont()
       v-model:check="font.moveGlyphsWithBaseline"
     />
     <MetricsField label="Metrics" v-model="font.metrics" />
-    <SizeField label="Canvas" v-model="font.canvas" :min="1" :max="128" />
+    <SizeField label="Canvas" v-model="editor.canvas" :min="1" :max="128" />
 
     <details class="flow">
       <summary>

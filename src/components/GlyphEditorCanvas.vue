@@ -1,32 +1,32 @@
 <script setup lang="ts">
+import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
-import { useHistory } from '@/stores/history'
+import { useDraw } from '@/tools/draw'
+import { useSelect } from '@/tools/select'
 import type { Glyph } from '@/types'
-import {
-  packPixel,
-  pixelIsCropped,
-  unpackPixelX,
-  unpackPixelY,
-} from '@/utils/pixel'
-import { useElementSize } from '@vueuse/core'
-import { computed, ref, toRefs } from 'vue'
+import { pixelIsCropped, unpackPixelX, unpackPixelY } from '@/utils/pixel'
+import { useElementSize, useEventListener } from '@vueuse/core'
+import { computed, ref, toRef, toRefs, watch } from 'vue'
 
 const props = defineProps<{ glyph: Glyph }>()
 const { glyph } = toRefs(props)
 
 const font = useFont()
-const history = useHistory()
+const editor = useEditor()
+
 const char = computed(() => String.fromCharCode(glyph.value.code))
-const canvasWidth = computed(() => font.canvas.width)
-const canvasHeight = computed(() => font.canvas.height)
+const canvasWidth = computed(() => editor.canvas.width)
+const canvasHeight = computed(() => editor.canvas.height)
 const maxPixelSize = 50
 
 const glyphGuide = ref<SVGTextElement>()
 const { width: glyphGuideWidth } = useElementSize(glyphGuide)
 
 const container = ref<HTMLDivElement>()
+const canvas = ref<HTMLElement>()
 const { width: containerWidth, height: containerHeight } =
   useElementSize(container)
+
 const scale = computed(() => {
   // Scale factors to fit the canvas within the container.
   const scaleWidth = containerWidth.value / canvasWidth.value
@@ -44,47 +44,47 @@ const scale = computed(() => {
   return Math.min(scaleContainer, scaleMax)
 })
 
-let isDrawing = false
-let pixelValue = true
+const draw = useDraw({ glyph })
+const select = useSelect({ glyph })
+const { selection, selectedPixels } = select
+const tools = { draw, select }
 
-const startDraw = (e: MouseEvent) => {
-  isDrawing = true
-  const pixel = mouseToPixel(e)
-  pixelValue = !glyph.value.pixels.has(pixel) // Toggle the color.
-  font.setGlyphPixel(glyph.value, pixel, pixelValue)
-}
+const activeTool = ref(draw)
+const activeToolName = toRef(() => editor.activeToolName)
+watch(activeToolName, (name) => (activeTool.value = tools[name]))
 
-const draw = (e: MouseEvent) => {
-  if (!isDrawing) return
-  const pixel = mouseToPixel(e)
-  font.setGlyphPixel(glyph.value, pixel, pixelValue)
-}
-
-const endDraw = () => {
-  if (!isDrawing) return
-  isDrawing = false
-  history.saveState(glyph.value.code)
-}
-
-const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
+const mouseToCanvas = ({ offsetX, offsetY }: MouseEvent) => {
   const inverseScale = 1 / scale.value
   let x = Math.floor(offsetX * inverseScale)
   let y = Math.floor(offsetY * inverseScale)
-  x = Math.max(0, Math.min(x, font.canvas.width - 1))
-  y = Math.max(0, Math.min(y, font.canvas.height - 1))
-  return packPixel(x, y)
+  x = Math.max(0, Math.min(x, canvasWidth.value - 1))
+  y = Math.max(0, Math.min(y, canvasHeight.value - 1))
+  return { x, y }
 }
+
+// Forward canvas mouse and key events to the active tool.
+useEventListener(canvas, 'mousedown', (e) =>
+  activeTool.value.onMouseDown?.(mouseToCanvas(e)),
+)
+useEventListener(canvas, 'mousemove', (e) =>
+  activeTool.value.onMouseMove?.(mouseToCanvas(e)),
+)
+useEventListener(canvas, 'mouseup', (e) =>
+  activeTool.value.onMouseUp?.(mouseToCanvas(e)),
+)
+useEventListener('keydown', (e) => activeTool.value.onKeyDown?.(e))
 </script>
 
 <template>
-  <div class="container" ref="container">
+  <div
+    class="container"
+    ref="container"
+    :data-selection="activeTool.name === 'select' && selection.length > 2"
+  >
     <svg
       :viewBox="`0 0 ${canvasWidth} ${canvasHeight}`"
       class="canvas"
-      @mousedown="startDraw"
-      @mousemove="draw"
-      @mouseup="endDraw"
-      @mouseleave="endDraw"
+      ref="canvas"
     >
       <!-- Pixels  -->
       <g>
@@ -93,6 +93,7 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
           :x="unpackPixelX(pixel)"
           :y="unpackPixelY(pixel)"
           :data-cropped="pixelIsCropped(pixel, canvasWidth, canvasHeight)"
+          :data-selected="selectedPixels?.has(pixel)"
           width="1"
           height="1"
           class="pixel"
@@ -205,6 +206,12 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
       >
         {{ char }}
       </text>
+      <!-- Selection -->
+      <polygon
+        v-if="activeTool.name === 'select' && selection.length > 2"
+        class="selection"
+        :points="selection.map(({ x, y }) => `${x},${y}`).join(' ')"
+      />
     </svg>
   </div>
 </template>
@@ -228,7 +235,12 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
 
 .pixel {
   fill: var(--color-text);
+
   &[data-cropped='true'] {
+    fill: var(--color-grid);
+  }
+
+  [data-selection='true'] &[data-selected='false'] {
     fill: var(--color-grid);
   }
 }
@@ -236,12 +248,6 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
 .grid {
   fill: none;
   stroke: var(--color-grid);
-  vector-effect: non-scaling-stroke;
-}
-
-.bounds {
-  fill: none;
-  stroke: var(--color-bounds);
   vector-effect: non-scaling-stroke;
 }
 
@@ -271,11 +277,47 @@ const mouseToPixel = ({ offsetX, offsetY }: MouseEvent) => {
   font-size: v-bind('`${font.basedOn.size}pt`');
   pointer-events: none;
   user-select: none;
+
+  [data-selection='true'] & {
+    display: none;
+  }
+}
+
+.bounds {
+  fill: none;
+  stroke: var(--color-bounds);
+  vector-effect: non-scaling-stroke;
+
+  [data-selection='true'] & {
+    display: none;
+  }
 }
 
 .bearing {
   fill: var(--color-bounds);
   stroke: var(--color-bounds);
   vector-effect: non-scaling-stroke;
+
+  [data-selection='true'] & {
+    display: none;
+  }
+}
+
+.selection {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-dasharray: 6;
+  vector-effect: non-scaling-stroke;
+  animation: selection 0.3s linear infinite;
+}
+
+@keyframes selection {
+  0% {
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    stroke-dashoffset: 12;
+  }
 }
 </style>

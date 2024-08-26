@@ -48,7 +48,7 @@ const add = async () => {
     if (result !== 'submit') return
   }
 
-  codes.forEach((code) => font.addGlyph(code))
+  codes.forEach((code) => font.addGlyph({ code }))
   font.activeGlyphCode = codes[0]
 }
 
