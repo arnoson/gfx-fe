@@ -4,7 +4,7 @@ import type { Point, ToolContext } from '@/types'
 import { packPixel } from '@/utils/pixel'
 import { defineTool } from './tool'
 
-export const useDraw = defineTool(({ glyph }: ToolContext) => {
+export const useDraw = defineTool('draw', ({ glyph }: ToolContext) => {
   const font = useFont()
   const history = useHistory()
 

@@ -31,6 +31,7 @@ export type ToolContext = {
 }
 
 export interface Tool {
+  name: string
   onMouseDown?: (point: Point) => unknown
   onMouseMove?: (point: Point) => unknown
   onMouseUp?: (point: Point) => unknown

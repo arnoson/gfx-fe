@@ -3,7 +3,7 @@ import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
 import { useDraw } from '@/tools/draw'
 import { useSelect } from '@/tools/select'
-import type { Glyph } from '@/types'
+import type { Glyph, Tool } from '@/types'
 import { pixelIsCropped, unpackPixelX, unpackPixelY } from '@/utils/pixel'
 import { useElementSize, useEventListener } from '@vueuse/core'
 import { computed, ref, toRef, toRefs, watch } from 'vue'
@@ -49,14 +49,14 @@ const select = useSelect({ glyph })
 const { selection, selectedPixels } = select
 const tools = { draw, select }
 
-const activeTool = ref(draw)
+const activeTool = ref<Tool>(draw)
 const activeToolName = toRef(() => editor.activeToolName)
 watch(activeToolName, (name) => (activeTool.value = tools[name]))
 
-const mouseToCanvas = ({ offsetX, offsetY }: MouseEvent) => {
+const mouseToCanvas = (e: Pick<MouseEvent, 'offsetX' | 'offsetY'>) => {
   const inverseScale = 1 / scale.value
-  let x = Math.floor(offsetX * inverseScale)
-  let y = Math.floor(offsetY * inverseScale)
+  let x = Math.floor(e.offsetX * inverseScale)
+  let y = Math.floor(e.offsetY * inverseScale)
   x = Math.max(0, Math.min(x, canvasWidth.value - 1))
   y = Math.max(0, Math.min(y, canvasHeight.value - 1))
   return { x, y }
@@ -69,9 +69,17 @@ useEventListener(canvas, 'mousedown', (e) =>
 useEventListener(canvas, 'mousemove', (e) =>
   activeTool.value.onMouseMove?.(mouseToCanvas(e)),
 )
-useEventListener(canvas, 'mouseup', (e) =>
-  activeTool.value.onMouseUp?.(mouseToCanvas(e)),
-)
+useEventListener('mouseup', (e) => {
+  if (!canvas.value) return
+  const { left, top } = canvas.value?.getBoundingClientRect()
+  // Since we listen for the mouseup on the window, we have to get the mouse
+  // position relative to the canvas.
+  const relativeMousePosition = {
+    offsetX: e.clientX - left,
+    offsetY: e.clientY - top,
+  }
+  activeTool.value.onMouseUp?.(mouseToCanvas(relativeMousePosition))
+})
 useEventListener('keydown', (e) => activeTool.value.onKeyDown?.(e))
 </script>
 

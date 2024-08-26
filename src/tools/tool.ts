@@ -1,6 +1,8 @@
 import type { Tool, ToolContext } from '@/types'
 
-// Just for the types, since all properties in Tool are optional, we can safely
-// cast.
-export const defineTool = <R>(fn: (ctx: ToolContext) => R) =>
-  fn as (ctx: ToolContext) => Tool & R
+export const defineTool =
+  <R>(name: string, fn: (ctx: ToolContext) => R) =>
+  (ctx: ToolContext): Tool & R => {
+    const result = fn(ctx)
+    return { name, ...result }
+  }

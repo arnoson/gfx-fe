@@ -7,7 +7,7 @@ import { ctxToPixels } from '@/utils/text'
 import { computed, ref, toRaw } from 'vue'
 import { defineTool } from './tool'
 
-export const useSelect = defineTool(({ glyph }: ToolContext) => {
+export const useSelect = defineTool('select', ({ glyph }: ToolContext) => {
   const font = useFont()
   const editor = useEditor()
   const history = useHistory()
@@ -73,7 +73,11 @@ export const useSelect = defineTool(({ glyph }: ToolContext) => {
     selection.value = [point]
   }
 
-  const select = (point: Point) => selection.value.push(point)
+  const select = (point: Point) => {
+    const lastPoint = selection.value.at(-1)
+    if (point.x === lastPoint?.x && point.y === lastPoint.y) return
+    selection.value.push(point)
+  }
 
   const startMove = (point: Point) => {
     const { x, y } = translate.value
