@@ -6,7 +6,6 @@ import { packPixel, translatePixels, type Pixels } from '@/utils/pixel'
 import { ctxToPixels } from '@/utils/text'
 import { computed, ref, toRaw } from 'vue'
 import { defineTool } from './tool'
-import { Clipper, FillRule, Paths64 } from 'clipper2-js'
 
 export const useSelect = defineTool('select', ({ glyph }: ToolContext) => {
   const font = useFont()
@@ -19,17 +18,6 @@ export const useSelect = defineTool('select', ({ glyph }: ToolContext) => {
   const glyphStartPixels = ref<Pixels>(new Set())
   const translate = ref({ x: 0, y: 0 })
   const selection = ref<{ x: number; y: number }[]>([])
-
-  const selectionSimplified = computed(() => {
-    const points = selection.value.map(toRaw)
-    if (points.length) points.push(points[0]) // close path
-
-    const subj = new Paths64()
-    subj.push(Clipper.makePath(points.map(({ x, y }) => [x, y]).flat()))
-    let [solution] = Clipper.Union(subj, undefined, FillRule.NonZero)
-
-    return solution ? solution.map(({ x, y }) => ({ x, y })) : selection.value
-  })
 
   const selectionTranslated = computed(() => {
     const { x, y } = translate.value
