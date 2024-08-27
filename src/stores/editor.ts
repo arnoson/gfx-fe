@@ -6,6 +6,38 @@ import { cropPixels, getBounds, packPixel } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { effect, markRaw, nextTick, ref } from 'vue'
 import { useFont } from './font'
+import {
+  boolean,
+  number,
+  object,
+  optional,
+  parse,
+  string,
+  type InferOutput,
+} from 'valibot'
+
+const SettingsSchema = object({
+  canvas: optional(object({ width: number(), height: number() })),
+  baseline: optional(number()),
+  metrics: optional(
+    object({
+      ascender: optional(number()),
+      capHeight: optional(number()),
+      xHeight: optional(number()),
+      descender: optional(number()),
+    }),
+  ),
+  basedOn: optional(
+    object({
+      name: string(),
+      size: number(),
+      guides: boolean(),
+      threshold: number(),
+    }),
+  ),
+})
+
+type Settings = InferOutput<typeof SettingsSchema>
 
 export const useEditor = defineStore('editor', () => {
   const font = useFont()
@@ -26,16 +58,34 @@ export const useEditor = defineStore('editor', () => {
     offscreenCanvas.height = canvas.value.height
   })
 
+  const parseSettings = (code: string) => {
+    const match = code.match(/\* Editor Settings: (\{.+\})/)
+    return match ? parse(SettingsSchema, JSON.parse(match[1])) : {}
+  }
+
+  const serializeSettings = () => {
+    const settings: Settings = {
+      canvas: { width: canvas.value.width, height: canvas.value.height },
+      metrics: font.metrics,
+      baseline: font.baseline,
+      basedOn: font.basedOn,
+    }
+    return JSON.stringify(settings)
+  }
+
   const load = async (code: string) => {
     font.glyphs.clear()
     const gfxFont = parseFont(code)
     let charCode = gfxFont.asciiStart
 
+    const settings = parseSettings(code)
+
     font.name = gfxFont.name
     font.lineHeight = gfxFont.yAdvance
-    font.baseline = 20
-    canvas.value.width = gfxFont.yAdvance
-    canvas.value.height = gfxFont.yAdvance
+    font.baseline = settings.baseline ?? Math.round(font.lineHeight * 0.66)
+    font.metrics = settings.metrics ?? {}
+    canvas.value.width = settings.canvas?.width ?? gfxFont.yAdvance
+    canvas.value.height = settings.canvas?.height ?? gfxFont.yAdvance
     // Setting the canvas size and baseline will trigger watchers, so we wait
     // for the next tick and continue when the watchers have finished.
     await nextTick()
@@ -135,17 +185,20 @@ export const useEditor = defineStore('editor', () => {
       if (bounds.width && bounds.height) byteOffset += byteIndex + 1
     }
 
-    downloadFile(
-      `${font.name}.h`,
-      serializeFont({
-        name: font.name,
-        bytes,
-        glyphs: gfxGlyphs,
-        asciiStart,
-        asciiEnd,
-        yAdvance: font.lineHeight,
-      }),
-    )
+    let code = `/**
+ * Created with gfx-fe (github.com/arnoson/gfx-fe): a web based editor for gfx fonts.
+ * Editor Settings: ${serializeSettings()}
+ */\n`
+    code += serializeFont({
+      name: font.name,
+      bytes,
+      glyphs: gfxGlyphs,
+      asciiStart,
+      asciiEnd,
+      yAdvance: font.lineHeight,
+    })
+
+    downloadFile(`${font.name}.h`, code)
   }
 
   return { activeToolName, canvas, load, save }

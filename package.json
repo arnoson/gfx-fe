@@ -16,6 +16,7 @@
     "@vueuse/math": "^11.0.3",
     "pinia": "^2.1.7",
     "radix-vue": "^1.9.4",
+    "valibot": "^0.39.0",
     "vue": "^3.4.29",
     "vue3-dropzone": "^2.2.1"
   },
