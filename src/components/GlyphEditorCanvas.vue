@@ -53,22 +53,34 @@ const activeTool = ref<Tool>(draw)
 const activeToolName = toRef(() => editor.activeToolName)
 watch(activeToolName, (name) => (activeTool.value = tools[name]))
 
-const mouseToCanvas = (e: Pick<MouseEvent, 'offsetX' | 'offsetY'>) => {
+const mouseToCanvas = (
+  e: Pick<MouseEvent, 'offsetX' | 'offsetY'>,
+  rounding: 'floor' | 'round' | 'ceil' = 'floor',
+) => {
   const inverseScale = 1 / scale.value
-  let x = Math.floor(e.offsetX * inverseScale)
-  let y = Math.floor(e.offsetY * inverseScale)
-  x = Math.max(0, Math.min(x, canvasWidth.value - 1))
-  y = Math.max(0, Math.min(y, canvasHeight.value - 1))
+  const round = Math[rounding]
+  let x = round(e.offsetX * inverseScale)
+  let y = round(e.offsetY * inverseScale)
+  let width = canvasWidth.value
+  let height = canvasHeight.value
+  if (rounding === 'floor') {
+    width -= 1
+    height -= 1
+  }
+  x = Math.max(0, Math.min(x, width))
+  y = Math.max(0, Math.min(y, height))
   return { x, y }
 }
 
 // Forward canvas mouse and key events to the active tool.
-useEventListener(canvas, 'mousedown', (e) =>
-  activeTool.value.onMouseDown?.(mouseToCanvas(e)),
-)
-useEventListener(canvas, 'mousemove', (e) =>
-  activeTool.value.onMouseMove?.(mouseToCanvas(e)),
-)
+useEventListener(canvas, 'mousedown', (e) => {
+  const { onMouseDown, config } = activeTool.value
+  onMouseDown?.(mouseToCanvas(e, config.pointRounding))
+})
+useEventListener(canvas, 'mousemove', (e) => {
+  const { onMouseMove, config } = activeTool.value
+  onMouseMove?.(mouseToCanvas(e, config.pointRounding))
+})
 useEventListener('mouseup', (e) => {
   if (!canvas.value) return
   const { left, top } = canvas.value?.getBoundingClientRect()
@@ -78,7 +90,8 @@ useEventListener('mouseup', (e) => {
     offsetX: e.clientX - left,
     offsetY: e.clientY - top,
   }
-  activeTool.value.onMouseUp?.(mouseToCanvas(relativeMousePosition))
+  const { onMouseUp, config } = activeTool.value
+  onMouseUp?.(mouseToCanvas(relativeMousePosition, config.pointRounding))
 })
 useEventListener('keydown', (e) => activeTool.value.onKeyDown?.(e))
 </script>

@@ -30,8 +30,13 @@ export type ToolContext = {
   glyph: Ref<Glyph>
 }
 
+export type ToolConfig = {
+  pointRounding?: 'floor' | 'round' | 'ceil'
+}
+
 export interface Tool {
   name: string
+  config: ToolConfig
   onMouseDown?: (point: Point) => unknown
   onMouseMove?: (point: Point) => unknown
   onMouseUp?: (point: Point) => unknown
