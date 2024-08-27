@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useFont } from '@/stores/font'
+import { useEditor } from '@/stores/editor'
 import { useDropzone } from 'vue3-dropzone'
 
-const font = useFont()
+const editor = useEditor()
 
 const onDrop = async ([file]: File[]) => {
   const code = await file.text()
-  font.load(code)
+  editor.load(code)
 }
 
 const { getRootProps, getInputProps, isDragActive, open } = useDropzone({

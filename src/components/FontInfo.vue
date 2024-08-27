@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
-import NumberCheckField from './NumberCheckField.vue'
 import FontUpload from './FontUpload.vue'
 import MetricsField from './MetricsField.vue'
+import NumberCheckField from './NumberCheckField.vue'
 import NumberField from './NumberField.vue'
 import SizeField from './SizeField.vue'
-import TextField from './TextField.vue'
 import SliderField from './SliderField.vue'
-import { useEditor } from '@/stores/editor'
+import TextField from './TextField.vue'
 
 const font = useFont()
 const editor = useEditor()
@@ -17,7 +17,7 @@ const editor = useEditor()
   <div class="font-info flow">
     <div class="load-save">
       <FontUpload />
-      <button @click="font.save()">Save</button>
+      <button @click="editor.save()">Save</button>
     </div>
 
     <TextField label="Name" v-model="font.name" />
