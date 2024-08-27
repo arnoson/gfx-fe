@@ -188,7 +188,7 @@ export const useEditor = defineStore('editor', () => {
     let code = `/**
  * Created with gfx-fe (github.com/arnoson/gfx-fe): a web based editor for gfx fonts.
  * Editor Settings: ${serializeSettings()}
- */\n`
+ */\n\n`
     code += serializeFont({
       name: font.name,
       bytes,
