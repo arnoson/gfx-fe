@@ -7,6 +7,10 @@ import { translatePixels } from '@/utils/pixel'
 import { measureGlyph, renderGlyph } from '@/utils/text'
 import { toRefs } from 'vue'
 
+import DrawIcon from '@/assets/icons/icon-draw.svg'
+import SelectIcon from '@/assets/icons/icon-select.svg'
+import FillIcon from '@/assets/icons/icon-fill.svg'
+
 const props = defineProps<{ glyph: Glyph }>()
 const { glyph } = toRefs(props)
 
@@ -32,9 +36,21 @@ const fill = () => {
 
 <template>
   <menu class="tools panel">
-    <button @click="editor.activeToolName = 'draw'">D</button>
-    <button @click="editor.activeToolName = 'select'">S</button>
-    <button @click="fill">A</button>
+    <button
+      @click="editor.activeToolName = 'draw'"
+      :data-active="editor.activeToolName === 'draw'"
+    >
+      <DrawIcon />
+    </button>
+    <button
+      @click="editor.activeToolName = 'select'"
+      :data-active="editor.activeToolName === 'select'"
+    >
+      <SelectIcon />
+    </button>
+    <button @click="fill">
+      <FillIcon />
+    </button>
   </menu>
 </template>
 
@@ -44,13 +60,20 @@ const fill = () => {
   top: 1rem;
   right: 1rem;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 3px;
+  padding: 2px;
 
   button {
     display: block;
-    height: 1lh;
-    aspect-ratio: 1;
-    padding: 0;
+    padding: 1px;
+
+    &[data-active='true'] {
+      color: var(--color-accent);
+    }
+
+    svg {
+      display: block;
+    }
   }
 }
 </style>
