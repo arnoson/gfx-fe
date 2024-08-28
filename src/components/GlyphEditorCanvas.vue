@@ -46,7 +46,7 @@ const scale = computed(() => {
 
 const draw = useDraw({ glyph })
 const select = useSelect({ glyph })
-const { selection, selectedPixels } = select
+const { selectionPolygon, selectedPixels } = select
 const tools = { draw, select }
 
 const activeTool = ref<Tool>(draw)
@@ -94,13 +94,17 @@ useEventListener('mouseup', (e) => {
   onMouseUp?.(mouseToCanvas(relativeMousePosition, config.pointRounding))
 })
 useEventListener('keydown', (e) => activeTool.value.onKeyDown?.(e))
+
+watch(glyph, () => activeTool.value.onGlyphChange?.(glyph.value))
 </script>
 
 <template>
   <div
     class="container"
     ref="container"
-    :data-selection="activeTool.name === 'select' && selection.length > 2"
+    :data-selection="
+      activeTool.name === 'select' && selectionPolygon.length > 2
+    "
   >
     <svg
       :viewBox="`0 0 ${canvasWidth} ${canvasHeight}`"
@@ -229,9 +233,9 @@ useEventListener('keydown', (e) => activeTool.value.onKeyDown?.(e))
       </text>
       <!-- Selection -->
       <polygon
-        v-if="activeTool.name === 'select' && selection.length > 2"
+        v-if="activeTool.name === 'select' && selectionPolygon.length > 2"
         class="selection"
-        :points="selection.map(({ x, y }) => `${x},${y}`).join(' ')"
+        :points="selectionPolygon.map(({ x, y }) => `${x},${y}`).join(' ')"
       />
     </svg>
   </div>

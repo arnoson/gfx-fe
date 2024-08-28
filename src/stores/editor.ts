@@ -1,8 +1,8 @@
-import type { Glyph } from '@/types'
+import type { Glyph, Point } from '@/types'
 import { getBit, setBit } from '@/utils/bit'
 import { downloadFile } from '@/utils/file'
 import { parseFont, serializeFont, type GfxGlyph } from '@/utils/font'
-import { cropPixels, getBounds, packPixel } from '@/utils/pixel'
+import { cropPixels, getBounds, packPixel, type Pixels } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { effect, markRaw, nextTick, ref } from 'vue'
 import { useFont } from './font'
@@ -39,6 +39,8 @@ const SettingsSchema = object({
 
 type Settings = InferOutput<typeof SettingsSchema>
 
+type Selection = { pixels: Pixels; polygon: Point[] }
+
 export const useEditor = defineStore('editor', () => {
   const font = useFont()
 
@@ -57,6 +59,8 @@ export const useEditor = defineStore('editor', () => {
     offscreenCanvas.width = canvas.value.width
     offscreenCanvas.height = canvas.value.height
   })
+
+  const selectionClipboard = ref<Selection>()
 
   const parseSettings = (code: string) => {
     const match = code.match(/\* Editor Settings: (\{.+\})/)
@@ -201,7 +205,7 @@ export const useEditor = defineStore('editor', () => {
     downloadFile(`${font.name}.h`, code)
   }
 
-  return { activeToolName, canvas, load, save }
+  return { activeToolName, canvas, selectionClipboard, load, save }
 })
 
 if (import.meta.hot)

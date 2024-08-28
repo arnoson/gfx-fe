@@ -41,6 +41,7 @@ export interface Tool {
   onMouseMove?: (point: Point) => unknown
   onMouseUp?: (point: Point) => unknown
   onKeyDown?: (e: KeyboardEvent) => unknown
+  onGlyphChange?: (glyph: Glyph) => unknown
 }
 
 export type Point = {
