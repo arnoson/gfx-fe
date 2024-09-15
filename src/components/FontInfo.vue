@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
+import { getBounds, translatePixels } from '@/utils/pixel'
+import { computed } from 'vue'
 import FontUpload from './FontUpload.vue'
 import MetricsField from './MetricsField.vue'
 import NumberCheckField from './NumberCheckField.vue'
@@ -11,6 +13,20 @@ import TextField from './TextField.vue'
 
 const font = useFont()
 const editor = useEditor()
+
+const baseline = computed({
+  get: () => font.baseline,
+  set: (newBaseline: number) => {
+    if (font.moveGlyphsWithBaseline) {
+      const delta = newBaseline - font.baseline
+      for (const [_, glyph] of font.glyphs) {
+        glyph.pixels = translatePixels(glyph.pixels, 0, delta)
+        glyph.bounds = getBounds(glyph.pixels)
+      }
+    }
+    font.baseline = newBaseline
+  },
+})
 </script>
 
 <template>
@@ -25,7 +41,7 @@ const editor = useEditor()
     <NumberCheckField
       label="Baseline"
       label-check="Move Glyphs"
-      v-model:value="font.baseline"
+      v-model:value="baseline"
       v-model:check="font.moveGlyphsWithBaseline"
     />
     <MetricsField label="Metrics" v-model="font.metrics" />

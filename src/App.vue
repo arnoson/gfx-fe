@@ -25,9 +25,6 @@ useEventListener(
   'hashchange',
   () => (font.activeGlyphCode = getGlyphUrlParam()),
 )
-
-font.addGlyph({ code: 35 })
-font.activeGlyphCode = 35
 </script>
 
 <template>

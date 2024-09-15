@@ -27,7 +27,7 @@ export const useDraw = defineTool('draw', ({ glyph }: ToolContext) => {
   const onMouseUp = () => {
     if (!isDrawing) return
     isDrawing = false
-    history.saveState(glyph.value)
+    font.saveGlyphState(glyph.value)
   }
 
   return { name: 'draw', onMouseDown, onMouseMove, onMouseUp }

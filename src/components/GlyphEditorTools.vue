@@ -30,7 +30,7 @@ const fill = () => {
   const centeredPixels = translatePixels(pixels, centeredLeft - left, 0)
   font.setGlyphPixels(glyph.value, centeredPixels)
 
-  history.saveState(glyph.value)
+  font.saveGlyphState(glyph.value)
 }
 </script>
 

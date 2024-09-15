@@ -14,7 +14,9 @@
     "@vueuse/core": "^11.0.1",
     "@vueuse/math": "^11.0.3",
     "pinia": "^2.1.7",
+    "pinia-plugin-persistedstate": "^4.0.1",
     "radix-vue": "^1.9.4",
+    "superjson": "^2.2.1",
     "valibot": "^0.39.0",
     "vue": "^3.4.29",
     "vue3-dropzone": "^2.2.1"

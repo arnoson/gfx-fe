@@ -108,7 +108,7 @@ export const useSelect = defineTool(
     }
 
     const endMove = () => {
-      history.saveState(glyph.value)
+      font.saveGlyphState(glyph.value)
     }
 
     // Copy & Paste
@@ -130,7 +130,7 @@ export const useSelect = defineTool(
       font.setGlyphPixels(glyph.value, pixelsWithoutSelection)
       selectedPixels.value = new Set()
       selectionPolygon.value = []
-      history.saveState(glyph.value)
+      font.saveGlyphState(glyph.value)
     }
 
     const paste = () => {
@@ -184,7 +184,7 @@ export const useSelect = defineTool(
         // Without converting to raw, Set.difference() won't work.
         toRaw(glyphStartPixels.value).difference(selectedPixels.value),
       )
-      history.saveState(glyph.value)
+      font.saveGlyphState(glyph.value)
 
       selectionPolygon.value = []
       mode = 'idle'
