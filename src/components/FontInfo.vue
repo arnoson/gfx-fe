@@ -27,6 +27,8 @@ const baseline = computed({
     font.baseline = newBaseline
   },
 })
+
+const clear = () => {}
 </script>
 
 <template>
@@ -34,6 +36,7 @@ const baseline = computed({
     <div class="load-save">
       <FontUpload />
       <button @click="editor.save()">Save</button>
+      <button @click="clear()">Clear</button>
     </div>
 
     <TextField label="Name" v-model="font.name" />

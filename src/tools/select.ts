@@ -1,4 +1,4 @@
-import { useEditor } from '@/stores/editor'
+import { offscreenCanvasCtx, useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
 import { useHistory } from '@/stores/history'
 import type { Point, ToolConfig, ToolContext } from '@/types'
@@ -14,8 +14,7 @@ export const useSelect = defineTool(
   ({ glyph }: ToolContext) => {
     const font = useFont()
     const editor = useEditor()
-    const history = useHistory()
-    const ctx = editor.canvas.ctx
+    const ctx = offscreenCanvasCtx
 
     let mode: 'select' | 'move' | 'idle' = 'idle'
 

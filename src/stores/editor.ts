@@ -41,20 +41,21 @@ type Settings = InferOutput<typeof SettingsSchema>
 
 type Selection = { pixels: Pixels; polygon: Point[] }
 
+// An offscreen HTML canvas that we use to render stuff in.
+export const offscreenCanvas = document.createElement('canvas')
+export const offscreenCanvasCtx = offscreenCanvas.getContext('2d', {
+  willReadFrequently: true,
+})!
+
 export const useEditor = defineStore(
   'editor',
   () => {
     const font = useFont()
 
-    // An offscreen HTML canvas that we use to render stuff in.
-    const offscreenCanvas = document.createElement('canvas')
-    const ctx = offscreenCanvas.getContext('2d', { willReadFrequently: true })!
-
     const activeToolName = ref<'draw' | 'select'>('draw')
     const canvas = ref({
       width: 20,
       height: 20,
-      ctx: markRaw(ctx),
     })
 
     effect(() => {
@@ -209,7 +210,7 @@ export const useEditor = defineStore(
 
     return { activeToolName, canvas, selectionClipboard, load, save }
   },
-  { persist: { omit: ['canvas.ctx'] } },
+  { persist: true },
 )
 
 if (import.meta.hot)
