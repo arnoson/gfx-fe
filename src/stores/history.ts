@@ -73,7 +73,9 @@ export const useHistory = defineStore('history', () => {
     history.index = history.stack.length - 1
   }
 
-  return { add, remove, undo, redo, saveState }
+  const clear = () => histories.clear()
+
+  return { add, remove, undo, redo, saveState, clear }
 })
 
 if (import.meta.hot)

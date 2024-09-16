@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
+import { useHistory } from '@/stores/history'
 import { getBounds, translatePixels } from '@/utils/pixel'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import FontUpload from './FontUpload.vue'
 import MetricsField from './MetricsField.vue'
+import ModalDialog from './ModalDialog.vue'
 import NumberCheckField from './NumberCheckField.vue'
 import NumberField from './NumberField.vue'
 import SizeField from './SizeField.vue'
@@ -13,6 +15,8 @@ import TextField from './TextField.vue'
 
 const font = useFont()
 const editor = useEditor()
+const history = useHistory()
+const clearDialog = ref()
 
 const baseline = computed({
   get: () => font.baseline,
@@ -28,7 +32,12 @@ const baseline = computed({
   },
 })
 
-const clear = () => {}
+const clear = async () => {
+  const result = await clearDialog.value?.prompt()
+  if (result !== 'submit') return
+  font.clear()
+  history.clear()
+}
 </script>
 
 <template>
@@ -38,6 +47,18 @@ const clear = () => {}
       <button @click="editor.save()">Save</button>
       <button @click="clear()">Clear</button>
     </div>
+
+    <ModalDialog ref="clearDialog" v-slot="{ close }" style="margin: auto">
+      <form method="dialog" class="flow">
+        Are you sure? This will remove all existing glyphs.
+        <menu>
+          <button type="reset" @click="close">Cancel</button>
+          <button type="submit" value="submit" data-theme="positive" autofocus>
+            Clear
+          </button>
+        </menu>
+      </form>
+    </ModalDialog>
 
     <TextField label="Name" v-model="font.name" />
     <NumberField label="Line Height" :min="1" v-model="font.lineHeight" />
@@ -74,7 +95,7 @@ const clear = () => {}
 
 .load-save {
   display: grid;
-  grid-template-columns: 1fr max-content;
+  grid-template-columns: 1fr max-content max-content;
   align-items: baseline;
   gap: 0.75rem;
 }

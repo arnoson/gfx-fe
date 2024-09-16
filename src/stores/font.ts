@@ -7,20 +7,20 @@ import { computed, ref, watch } from 'vue'
 import { useEditor } from './editor'
 import { useHistory } from './history'
 
+const defaults = {
+  basedOn: { name: '', size: 12, guides: true, threshold: 125 },
+  name: 'New Font',
+}
+
 export const useFont = defineStore(
   'font',
   () => {
-    const name = ref('New Font')
+    const name = ref(defaults.name)
     const lineHeight = ref(10)
     const baseline = ref(17)
     const moveGlyphsWithBaseline = ref(true)
     const metrics = ref<Metrics>({})
-    const basedOn = ref({
-      name: 'Vevey Positive',
-      size: 17,
-      guides: true,
-      threshold: 125,
-    })
+    const basedOn = ref(structuredClone(defaults.basedOn))
 
     const glyphs = ref(new Map<number, Glyph>())
     const glyphCodes = computed(() => Array.from(glyphs.value.keys()))
@@ -94,6 +94,13 @@ export const useFont = defineStore(
       glyph.bounds = getBounds(glyph.pixels)
     }
 
+    const clear = () => {
+      glyphs.value.clear()
+      activeGlyphCode.value = undefined
+      name.value = defaults.name
+      basedOn.value = structuredClone(defaults.basedOn)
+    }
+
     // Restore the glyphs from local storage
     for (const code of persistedGlyphCodes.value) {
       const glyphSerialized = localStorage.getItem(`glyph-${code}`)
@@ -117,6 +124,7 @@ export const useFont = defineStore(
       setGlyphPixel,
       setGlyphPixels,
       clearGlyph,
+      clear,
     }
   },
   { persist: { omit: ['glyphs'] } },
