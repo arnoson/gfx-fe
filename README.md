@@ -9,6 +9,6 @@
 
 A web based GFX Font Editor for [Adafruit GFX Fonts](https://learn.adafruit.com/adafruit-gfx-graphics-library/using-fonts)
 
-Try it live: [arnoson.github.com/gfx-fe](https://arnoson.github.com/gfx-fe)
+Try it live: [arnoson.github.io/gfx-fe](https://arnoson.github.io/gfx-fe/)
 
 📜 Documentation coming soon!
