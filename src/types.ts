@@ -36,7 +36,7 @@ export type ToolConfig = {
 
 export interface Tool {
   name: string
-  config: ToolConfig
+  config?: ToolConfig
   onMouseDown?: (point: Point) => unknown
   onMouseMove?: (point: Point) => unknown
   onMouseUp?: (point: Point) => unknown

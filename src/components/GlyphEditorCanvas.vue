@@ -75,11 +75,11 @@ const mouseToCanvas = (
 // Forward canvas mouse and key events to the active tool.
 useEventListener(canvas, 'mousedown', (e) => {
   const { onMouseDown, config } = activeTool.value
-  onMouseDown?.(mouseToCanvas(e, config.pointRounding))
+  onMouseDown?.(mouseToCanvas(e, config?.pointRounding))
 })
 useEventListener(canvas, 'mousemove', (e) => {
   const { onMouseMove, config } = activeTool.value
-  onMouseMove?.(mouseToCanvas(e, config.pointRounding))
+  onMouseMove?.(mouseToCanvas(e, config?.pointRounding))
 })
 useEventListener('mouseup', (e) => {
   if (!canvas.value) return
@@ -91,7 +91,7 @@ useEventListener('mouseup', (e) => {
     offsetY: e.clientY - top,
   }
   const { onMouseUp, config } = activeTool.value
-  onMouseUp?.(mouseToCanvas(relativeMousePosition, config.pointRounding))
+  onMouseUp?.(mouseToCanvas(relativeMousePosition, config?.pointRounding))
 })
 useEventListener('keydown', (e) => activeTool.value.onKeyDown?.(e))
 
