@@ -19,3 +19,17 @@ pinia.use(
 const app = createApp(App)
 app.use(pinia)
 app.mount('#app')
+
+// window.addEventListener('click', async () => {
+//   try {
+//     const availableFonts = await window.queryLocalFonts()
+//     for (const fontData of availableFonts) {
+//       console.log(fontData.postscriptName)
+//       console.log(fontData.fullName)
+//       console.log(fontData.family)
+//       console.log(fontData.style)
+//     }
+//   } catch (err) {
+//     console.error(err.name, err.message)
+//   }
+// })

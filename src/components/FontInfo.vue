@@ -12,6 +12,7 @@ import NumberField from './NumberField.vue'
 import SizeField from './SizeField.vue'
 import SliderField from './SliderField.vue'
 import TextField from './TextField.vue'
+import FontInput from './FontInput.vue'
 
 const font = useFont()
 const editor = useEditor()
@@ -73,16 +74,10 @@ const clear = async () => {
 
     <details class="flow">
       <summary>
-        Based on <em>{{ font.basedOn.name }}</em>
+        Based on <em>{{ font.basedOn.name }} {{ font.basedOn.style }}</em>
       </summary>
-      <TextField label="Font" v-model="font.basedOn.name" />
-      <NumberField label="Size" v-model="font.basedOn.size" unit="px" />
-      <SliderField
-        label="Threshold"
-        :min="1"
-        :max="254"
-        v-model="font.basedOn.threshold"
-      />
+      <FontInput v-model="font.basedOn" />
+      {{ font.basedOn }}
     </details>
   </div>
 </template>

@@ -29,6 +29,7 @@ button[data-theme='positive'] {
 
 input,
 textarea,
+select,
 button {
   box-sizing: content-box;
   border: none;
@@ -37,7 +38,8 @@ button {
   color: var(--color-panel-text);
 }
 
-input {
+input,
+select {
   padding-inline: 0.2em 0.3em;
   min-width: 2ch;
   accent-color: var(--color-accent);
