@@ -77,7 +77,6 @@ const clear = async () => {
         Based on <em>{{ font.basedOn.name }}</em>
       </summary>
       <FontInput v-model="font.basedOn" />
-      {{ font.basedOn }}
     </details>
   </div>
 </template>
