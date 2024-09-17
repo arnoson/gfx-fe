@@ -79,7 +79,7 @@ const remove = async (code: number) => {
       <a
         v-for="[code, glyph] of sortedGlyphs"
         class="glyph"
-        :href="`/#/glyph/${code}`"
+        :href="`#/glyph/${code}`"
         :data-active="font.activeGlyphCode === code"
         :data-char-code="code"
         @keydown.delete="remove(code)"
