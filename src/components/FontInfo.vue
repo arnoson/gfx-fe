@@ -74,7 +74,7 @@ const clear = async () => {
 
     <details class="flow">
       <summary>
-        Based on <em>{{ font.basedOn.name }} {{ font.basedOn.style }}</em>
+        Based on <em>{{ font.basedOn.name }}</em>
       </summary>
       <FontInput v-model="font.basedOn" />
       {{ font.basedOn }}
