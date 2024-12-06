@@ -4,8 +4,6 @@ import { downloadFile } from '@/utils/file'
 import { parseFont, serializeFont, type GfxGlyph } from '@/utils/font'
 import { cropPixels, getBounds, packPixel, type Pixels } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { effect, markRaw, nextTick, ref } from 'vue'
-import { useFont } from './font'
 import {
   boolean,
   number,
@@ -15,6 +13,8 @@ import {
   string,
   type InferOutput,
 } from 'valibot'
+import { effect, nextTick, ref } from 'vue'
+import { useFont } from './font'
 
 const SettingsSchema = object({
   canvas: optional(object({ width: number(), height: number() })),
