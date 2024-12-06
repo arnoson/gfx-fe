@@ -73,6 +73,7 @@ export const useFont = defineStore(
     const saveGlyphState = (glyph: Glyph) => {
       history.saveState(glyph)
       localStorage.setItem(`glyph-${glyph.code}`, stringify(glyph))
+      glyph.bounds = getBounds(glyph.pixels)
     }
 
     const setGlyphPixel = (glyph: Glyph, pixel: number, value: boolean) => {
