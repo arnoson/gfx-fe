@@ -26,11 +26,13 @@ const activeElementIsInput = computed(() => {
 
 onKeyStroke('z', (e) => {
   if (!e.ctrlKey || activeElementIsInput.value) return
+  e.preventDefault()
   history.undo(glyph.value)
 })
 
 onKeyStroke('y', (e) => {
   if (!e.ctrlKey || activeElementIsInput.value) return
+  e.preventDefault()
   history.redo(glyph.value)
 })
 </script>
