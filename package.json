@@ -28,7 +28,7 @@
     "@vue/tsconfig": "^0.7.0",
     "npm-run-all2": "^7.0.1",
     "prettier": "^3.4.2",
-    "typescript": "~5.7.2",
+    "typescript": "~5.6.3",
     "vite": "^6.0.3",
     "vite-svg-loader": "^5.1.0",
     "vue-tsc": "^2.1.10"
