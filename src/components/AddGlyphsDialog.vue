@@ -49,7 +49,7 @@ const add = async () => {
   }
 
   codes.forEach((code) => font.addGlyph({ code }))
-  font.activeGlyphCode = codes[0]
+  window.location.hash = `#/glyph/${codes[0]}`
 }
 
 const open = () => {
