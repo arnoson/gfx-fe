@@ -9,7 +9,7 @@ const onDrop = async ([file]: File[]) => {
   editor.load(code)
 }
 
-const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+const { getRootProps, getInputProps, isDragActive } = useDropzone({
   onDrop,
 })
 </script>
@@ -21,7 +21,7 @@ const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     :data-drag-active="isDragActive"
   >
     <input v-bind="getInputProps()" />
-    <button @click="open">Load</button>
+    <button>Load</button>
     <div class="drop-hint">or drop file</div>
   </div>
 </template>
