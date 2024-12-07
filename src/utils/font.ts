@@ -70,6 +70,7 @@ export const serializeFont = ({
   asciiEnd,
   yAdvance,
 }: GfxFont): string => {
+  name = sanitizeFontName(name)
   return `const uint8_t ${name}Bitmaps[] PROGMEM = ${uint8ToString(bytes)};
 
 const GFXglyph ${name}Glyphs[] PROGMEM = {
@@ -84,6 +85,17 @@ const GFXfont ${name} PROGMEM = {
   ${asciiStart}, ${asciiEnd}, ${yAdvance}
 };
 `
+}
+
+const sanitizeFontName = (name: string): string => {
+  // Replace spaces with underscores and remove invalid characters.
+  let sanitized = name.replace(/\s+/g, '_')
+  sanitized = sanitized.replace(/[^a-zA-Z0-9_]/g, '')
+
+  // Ensure the name doesn't start with a digit.
+  if (/^\d/.test(sanitized)) sanitized = '_' + sanitized
+
+  return sanitized
 }
 
 const arrayToChunks = (array: any[], size: number): any[][] =>
