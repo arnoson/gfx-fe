@@ -94,6 +94,7 @@ export const useEditor = defineStore(
       font.lineHeight = gfxFont.yAdvance
       font.baseline = settings.baseline ?? Math.round(font.lineHeight * 0.66)
       font.metrics = settings.metrics ?? {}
+      if (settings.basedOn) font.basedOn = settings.basedOn
       canvas.value.width = settings.canvas?.width ?? gfxFont.yAdvance
       canvas.value.height = settings.canvas?.height ?? gfxFont.yAdvance
       // Setting the canvas size and baseline will trigger watchers, so we wait
