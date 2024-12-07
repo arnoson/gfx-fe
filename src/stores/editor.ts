@@ -146,7 +146,7 @@ export const useEditor = defineStore(
         }),
       )
 
-      const charCodes = Array.from(croppedGlyphs.keys()).sort()
+      const charCodes = Array.from(croppedGlyphs.keys()).sort((a, b) => a - b)
       const asciiStart = charCodes[0]
       const asciiEnd = charCodes.at(-1) ?? asciiStart
 
