@@ -1,7 +1,12 @@
 import type { Glyph, Point } from '@/types'
 import { getBit, setBit } from '@/utils/bit'
 import { downloadFile } from '@/utils/file'
-import { parseFont, serializeFont, type GfxGlyph } from '@/utils/font'
+import {
+  glyphIsEmpty,
+  parseFont,
+  serializeFont,
+  type GfxGlyph,
+} from '@/utils/font'
 import { cropPixels, getBounds, packPixel, type Pixels } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import {
@@ -83,8 +88,6 @@ export const useEditor = defineStore(
     const load = async (code: string) => {
       font.glyphs.clear()
       const gfxFont = parseFont(code)
-      let charCode = gfxFont.asciiStart
-
       const settings = parseSettings(code)
 
       font.name = gfxFont.name
@@ -97,7 +100,9 @@ export const useEditor = defineStore(
       // for the next tick and continue when the watchers have finished.
       await nextTick()
 
-      for (const glyph of gfxFont.glyphs) {
+      for (const [i, glyph] of gfxFont.glyphs.entries()) {
+        if (glyphIsEmpty(glyph)) continue
+
         const pixels = new Set<number>()
         const left = Math.floor((canvas.value.width - glyph.width) / 2)
 
@@ -125,8 +130,7 @@ export const useEditor = defineStore(
           left: glyph.deltaX,
           right: glyph.xAdvance - glyph.width - glyph.deltaX,
         }
-        font.addGlyph({ code: charCode, pixels, bearing })
-        charCode++
+        font.addGlyph({ code: i + gfxFont.asciiStart, pixels, bearing })
       }
     }
 
@@ -142,9 +146,9 @@ export const useEditor = defineStore(
         }),
       )
 
-      const charCodes = Array.from(croppedGlyphs.keys())
-      const asciiStart = Math.min(...charCodes)
-      const asciiEnd = Math.max(...charCodes)
+      const charCodes = Array.from(croppedGlyphs.keys()).sort()
+      const asciiStart = charCodes[0]
+      const asciiEnd = charCodes.at(-1) ?? asciiStart
 
       let bytesCount = 0
       for (const [_, { bounds }] of croppedGlyphs) {
@@ -154,9 +158,16 @@ export const useEditor = defineStore(
       const gfxGlyphs: GfxGlyph[] = []
       const bytes = new Uint8Array(bytesCount)
       let byteOffset = 0
-      for (const [_, glyph] of croppedGlyphs) {
-        const { bounds, bearing } = glyph
+      for (let code = asciiStart; code <= asciiEnd; code++) {
+        const glyph = croppedGlyphs.get(code)
+        if (!glyph) {
+          // Add an empty placeholder.
+          // prettier-ignore
+          gfxGlyphs.push({ byteOffset: 0, width: 0, height: 0, xAdvance: 0, deltaX: 0, deltaY: 0 })
+          continue
+        }
 
+        const { bounds, bearing } = glyph
         let byteIndex = 0
         let bitIndex = 7
 

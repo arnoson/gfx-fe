@@ -16,6 +16,14 @@ export type GfxFont = {
   yAdvance: number
 }
 
+export const glyphIsEmpty = (glyph: GfxGlyph) =>
+  glyph.byteOffset === 0 &&
+  glyph.deltaX === 0 &&
+  glyph.deltaY === 0 &&
+  glyph.height === 0 &&
+  glyph.width === 0 &&
+  glyph.xAdvance === 0
+
 export const parseFont = (code: string): GfxFont => {
   const font = code.match(
     /GFXfont\s+(\w+)[\s\S]+(\s+[0-9a-zA-Z]+,\s+[0-9a-zA-Z]+,\s+[0-9a-zA-Z]+)/,
