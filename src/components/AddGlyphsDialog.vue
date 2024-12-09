@@ -32,7 +32,7 @@ const charactersToCode = (characters: string[]) => {
 }
 
 const add = async () => {
-  const codes =
+  let codes =
     characters.value === ' '
       ? // We use the space as a separator in a list of characters, but as a shorthand
         // we treat it as a space if no list is provided.
@@ -45,7 +45,10 @@ const add = async () => {
 
   if (alreadyExistingCodes.value.length) {
     const result = await errorDialog.value?.prompt()
-    if (result !== 'submit') return
+    if (result !== 'submit') {
+      // Don't replace existing glyphs.
+      codes = codes.filter((code) => !alreadyExistingCodes.value.includes(code))
+    }
   }
 
   codes.forEach((code) => font.addGlyph({ code }))
