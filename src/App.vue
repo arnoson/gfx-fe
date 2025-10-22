@@ -2,29 +2,22 @@
 import { useEventListener, useWindowSize } from '@vueuse/core'
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'radix-vue'
 import DisplayPreview from './components/DisplayPreview.vue'
-import FontInfo from './components/FontInfo.vue'
+import FontProperties from './components/FontProperties.vue'
 import GlyphDefs from './components/GlyphDefs.vue'
 import GlyphEditor from './components/GlyphEditor.vue'
 import GlyphList from './components/GlyphList.vue'
 import { useFont } from './stores/font'
+import { useStorage } from './stores/storage'
+import { ProjectProperties } from 'vue-toolkit'
 
 const { height } = useWindowSize()
 const font = useFont()
+const storage = useStorage()
 
-const getGlyphUrlParam = () => {
-  const { hash } = window.location
-  if (!hash.startsWith('#/glyph/')) return
-  const param = hash.split('/').at(-1)
-  return param ? +param : undefined
+const clear = () => {
+  font.clear()
+  storage.clear()
 }
-
-font.activeGlyphCode = getGlyphUrlParam()
-
-useEventListener(
-  window,
-  'hashchange',
-  () => (font.activeGlyphCode = getGlyphUrlParam()),
-)
 </script>
 
 <template>
@@ -32,7 +25,19 @@ useEventListener(
 
   <SplitterGroup direction="horizontal">
     <SplitterPanel id="panel-sidebar" :default-size="25">
-      <FontInfo />
+      <ProjectProperties
+        v-model:name="font.name"
+        :has-unsaved-changes="storage.hasUnsavedChanges"
+        :file-type="storage.fileType"
+        @clear="clear()"
+        @save="storage.save()"
+        @open="storage.open($event)"
+      >
+        <template #clear>
+          <p>Are you sure? This will remove all glyphs.</p>
+        </template>
+      </ProjectProperties>
+      <FontProperties />
       <GlyphList />
     </SplitterPanel>
     <SplitterResizeHandle

@@ -1,7 +1,6 @@
 @layer reset, base, components, utilities;
 @import './reset.css' layer(reset);
 @import './base.css' layer(base);
-@import './panel.css' layer(components);
 @import './field.css' layer(components);
 @import './dialog.css' layer(components);
 @import './code.css' layer(components);

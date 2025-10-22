@@ -1,4 +1,13 @@
 import type { Ref } from 'vue'
+import {
+  boolean,
+  number,
+  object,
+  optional,
+  parse,
+  string,
+  type InferOutput,
+} from 'valibot'
 
 export type Bounds = {
   left: number
@@ -15,6 +24,7 @@ export type Glyph = {
   bounds: Bounds
   bearing: { left: number; right: number }
   guide: { enabled: boolean }
+  version: number,
 }
 
 export type Metrics = {
@@ -48,3 +58,26 @@ export type Point = {
   x: number
   y: number
 }
+
+export const SettingsSchema = object({
+  canvas: optional(object({ width: number(), height: number() })),
+  baseline: optional(number()),
+  metrics: optional(
+    object({
+      ascender: optional(number()),
+      capHeight: optional(number()),
+      xHeight: optional(number()),
+      descender: optional(number()),
+    }),
+  ),
+  basedOn: optional(
+    object({
+      name: string(),
+      size: number(),
+      guides: boolean(),
+      threshold: number(),
+    }),
+  ),
+})
+
+export type Settings = InferOutput<typeof SettingsSchema>
