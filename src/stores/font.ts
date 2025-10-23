@@ -2,29 +2,27 @@ import {
   SettingsSchema,
   type Glyph,
   type Metrics,
+  type Pixels,
   type Settings,
 } from '@/types'
-import {
-  cropPixels,
-  getBounds,
-  packPixel,
-  translatePixels,
-  type Pixels,
-} from '@/utils/pixel'
-import { useStorage } from '@vueuse/core'
-import { acceptHMRUpdate, defineStore } from 'pinia'
-import { parse, stringify } from 'superjson'
-import { computed, nextTick, ref, version, watch } from 'vue'
-import { useEditor } from './editor'
-import { useHistory } from './history'
+import { getBit, setBit } from '@/utils/bit'
 import {
   glyphIsEmpty,
   parseFont,
   serializeFont,
   type GfxGlyph,
 } from '@/utils/font'
-import { getBit, setBit } from '@/utils/bit'
+import {
+  cropPixels,
+  getBounds,
+  packPixel,
+  translatePixels,
+} from '@/utils/pixel'
+import { acceptHMRUpdate, defineStore } from 'pinia'
 import { parse as parseSchema } from 'valibot'
+import { computed, nextTick, ref, watch } from 'vue'
+import { useEditor } from './editor'
+import { useHistory } from './history'
 
 const defaults = {
   basedOn: { name: '', size: 12, guides: true, threshold: 125 },

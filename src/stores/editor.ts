@@ -1,5 +1,4 @@
-import type { Glyph, Point } from '@/types'
-import { type Pixels } from '@/utils/pixel'
+import type { Glyph, Pixels, Point } from '@/types'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { computed, effect, ref } from 'vue'
 import { useFont } from './font'

@@ -1,6 +1,7 @@
 import { useFont } from '@/stores/font'
-import { packPixel, type Pixels } from './pixel'
+import { packPixel } from './pixel'
 import { useEditor } from '@/stores/editor'
+import type { Pixels } from '@/types'
 
 const canvas = document.createElement('canvas')
 const ctx = canvas.getContext('2d', { willReadFrequently: true })!

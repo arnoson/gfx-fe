@@ -4,7 +4,7 @@
 // pixels are never 'lost'. So if we move a glyph out of the canvas, we can move
 // it back in at a later point in time.
 
-export type Pixels = Set<number>
+import type { Pixels } from '@/types'
 
 export const packPixel = (x: number, y: number) => {
   // Encode x and y with the sign bit in the MSB.

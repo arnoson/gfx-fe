@@ -1,12 +1,7 @@
 import { offscreenCanvasCtx, useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
-import type { Point } from '@/types'
-import {
-  packPixel,
-  translatePixels,
-  getBounds,
-  type Pixels,
-} from '@/utils/pixel'
+import type { Pixels, Point } from '@/types'
+import { packPixel, translatePixels, getBounds } from '@/utils/pixel'
 import { ctxToPixels } from '@/utils/text'
 import { computed, ref, toRaw, watch } from 'vue'
 import icon from '@/assets/icons/icon-select.svg'

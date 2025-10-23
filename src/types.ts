@@ -20,7 +20,7 @@ export type Bounds = {
 
 export type Glyph = {
   code: number
-  pixels: Set<number>
+  pixels: Pixels
   bounds: Bounds
   bearing: { left: number; right: number }
   version: number
@@ -60,6 +60,8 @@ export type Point = {
   x: number
   y: number
 }
+
+export type Pixels = Set<number>
 
 export const SettingsSchema = object({
   canvas: optional(object({ width: number(), height: number() })),
