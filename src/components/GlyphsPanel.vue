@@ -10,7 +10,9 @@ const font = useFont()
 const editor = useEditor()
 
 const frames = computed(() =>
-  font.glyphsList.map((v) => ({ ...v, id: v.code, name: getCharName(v.code) })),
+  font.glyphsList
+    .map((v) => ({ ...v, id: v.code, name: getCharName(v.code) }))
+    .sort((a, b) => a.code - b.code),
 )
 
 const getCharName = (code: number) => {

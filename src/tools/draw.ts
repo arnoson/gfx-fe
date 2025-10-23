@@ -5,6 +5,7 @@ import { packPixel } from '@/utils/pixel'
 import { computed } from 'vue'
 import icon from '@/assets/icons/icon-draw.svg'
 import { defineTool } from './tool'
+import { useHistory } from '@/stores/history'
 
 export const useDraw = defineTool('draw', {
   icon,
@@ -12,6 +13,7 @@ export const useDraw = defineTool('draw', {
   setup: () => {
     const font = useFont()
     const editor = useEditor()
+    const history = useHistory()
     const glyph = computed(() => editor.activeGlyph)
 
     let isDrawing = false
@@ -34,7 +36,7 @@ export const useDraw = defineTool('draw', {
     const onMouseUp = () => {
       if (!glyph.value || !isDrawing) return
       isDrawing = false
-      font.saveGlyphState(glyph.value)
+      history.saveState(glyph.value)
     }
 
     return { name: 'draw', onMouseDown, onMouseMove, onMouseUp }

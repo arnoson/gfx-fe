@@ -70,22 +70,14 @@ export const useFont = defineStore('font', () => {
       bearing,
       version,
       bounds: getBounds(pixels),
-      guide: { enabled: true },
     }
     glyphs.value.set(code, glyph)
-    history.add(code)
-    saveGlyphState(glyph)
+    history.add(glyph)
   }
 
   const removeGlyph = (code: number) => {
     glyphs.value.delete(code)
     history.remove(code)
-  }
-
-  const saveGlyphState = (glyph: Glyph) => {
-    history.saveState(glyph)
-    localStorage.setItem(`glyph-${glyph.code}`, stringify(glyph))
-    glyph.bounds = getBounds(glyph.pixels)
   }
 
   const setGlyphPixel = (glyph: Glyph, pixel: number, value: boolean) => {
@@ -96,6 +88,10 @@ export const useFont = defineStore('font', () => {
 
   const setGlyphPixels = (glyph: Glyph, pixels: Pixels) => {
     glyph.pixels = pixels
+    glyph.bounds = getBounds(glyph.pixels)
+  }
+
+  const updateGlyphBounds = (glyph: Glyph) => {
     glyph.bounds = getBounds(glyph.pixels)
   }
 
@@ -290,9 +286,9 @@ export const useFont = defineStore('font', () => {
     moveGlyphsWithBaseline,
     addGlyph,
     removeGlyph,
-    saveGlyphState,
     setGlyphPixel,
     setGlyphPixels,
+    updateGlyphBounds,
     clearGlyph,
     clear,
     toCode,

@@ -11,6 +11,7 @@ import { ctxToPixels } from '@/utils/text'
 import { computed, ref, toRaw, watch } from 'vue'
 import icon from '@/assets/icons/icon-select.svg'
 import { defineTool } from './tool'
+import { useHistory } from '@/stores/history'
 
 export const useSelect = defineTool('select', {
   icon,
@@ -19,6 +20,7 @@ export const useSelect = defineTool('select', {
   setup: () => {
     const font = useFont()
     const editor = useEditor()
+    const history = useHistory()
     const glyph = computed(() => editor.activeGlyph)
     const ctx = offscreenCanvasCtx
 
@@ -130,7 +132,8 @@ export const useSelect = defineTool('select', {
 
     const endMove = () => {
       if (!glyph.value) return
-      font.saveGlyphState(glyph.value)
+      font.updateGlyphBounds(glyph.value)
+      history.saveState(glyph.value)
     }
 
     // Copy & Paste
@@ -153,7 +156,7 @@ export const useSelect = defineTool('select', {
       font.setGlyphPixels(glyph.value, pixelsWithoutSelection)
       selectedPixels.value = new Set()
       selectionPolygon.value = []
-      font.saveGlyphState(glyph.value)
+      history.saveState(glyph.value)
     }
 
     const paste = () => {
@@ -179,7 +182,7 @@ export const useSelect = defineTool('select', {
       // The user can click and move the selection as often as desired.
       // Only when the selection is stopped by clicking outside the selection
       // we consider the move to be finished.
-      if (!clickIsInSelection) endMove()
+      if (!clickIsInSelection && selectionPolygon.value.length) endMove()
 
       // If we click on a selection, we can move it. Otherwise we start a new
       // selection.
@@ -207,7 +210,7 @@ export const useSelect = defineTool('select', {
         // Without converting to raw, Set.difference() won't work.
         toRaw(glyphStartPixels.value).difference(selectedPixels.value),
       )
-      font.saveGlyphState(glyph.value)
+      history.saveState(glyph.value)
 
       selectionPolygon.value = []
       mode = 'idle'

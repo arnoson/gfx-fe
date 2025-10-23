@@ -30,8 +30,7 @@ export const useStorage = defineStore('storage', () => {
       [...font.glyphs.values()].map((v) => [v.code, v.version]),
     )
 
-    // TODO:
-    // project.framesAndComponents.forEach(backupFrame)
+    font.glyphsList.forEach(backupGlyph)
   }
 
   const save = async () => {
@@ -94,8 +93,8 @@ export const useStorage = defineStore('storage', () => {
     hasUnsavedChanges,
     open,
     save,
-    backupFrame: backupGlyph,
-    backupFrameDebounced: backupGlyphDebounced,
+    backupGlyph,
+    backupGlyphDebounced,
     restoreBackup,
     clear,
   }

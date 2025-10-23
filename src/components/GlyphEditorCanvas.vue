@@ -227,7 +227,7 @@ useEventListener('keydown', (e) => {
       </g>
       <!-- Glyph Guide -->
       <text
-        v-if="glyph.guide.enabled && font.basedOn.name && scale"
+        v-if="font.basedOn.name && scale"
         ref="glyphGuide"
         class="glyph-guide"
         :x="(canvasWidth - glyphGuideWidth / scale) / 2"

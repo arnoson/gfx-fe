@@ -17,6 +17,8 @@ const font = useFont()
 const editor = useEditor()
 const storage = useStorage()
 
+storage.restoreBackup()
+
 const clear = () => {
   font.clear()
   storage.clear()

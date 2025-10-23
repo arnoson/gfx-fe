@@ -5,6 +5,7 @@ import { computed } from 'vue'
 import { measureGlyph, renderGlyph } from '@/utils/text'
 import { useFont } from '@/stores/font'
 import { translatePixels } from '@/utils/pixel'
+import { useHistory } from '@/stores/history'
 
 export const useFill = defineTool('fill', {
   icon,
@@ -12,6 +13,7 @@ export const useFill = defineTool('fill', {
   setup: () => {
     const editor = useEditor()
     const font = useFont()
+    const history = useHistory()
     const glyph = computed(() => editor.activeGlyph)
 
     const fill = () => {
@@ -28,7 +30,7 @@ export const useFill = defineTool('fill', {
       const centeredPixels = translatePixels(pixels, centeredLeft - left, 0)
       font.setGlyphPixels(glyph.value, centeredPixels)
 
-      font.saveGlyphState(glyph.value)
+      history.saveState(glyph.value)
     }
 
     const activate = (prevToolId: string) => {

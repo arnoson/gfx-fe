@@ -1,28 +1,36 @@
+import { useStorage } from '@/stores/storage'
 import type { Glyph } from '@/types'
 import { getBounds } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import { toRaw } from 'vue'
 
 // Right now, we only support undo/redo for glyphs.
-type GlyphState = {
-  pixels?: Glyph['pixels']
-  bearing?: Glyph['bearing']
-}
+type State = Omit<Glyph, 'code' | 'bounds' | 'guide'>
 
 type History = {
   index: number
-  stack: GlyphState[]
+  stack: State[]
 }
 
-const cloneState = ({ pixels, bearing }: GlyphState) => ({
-  pixels: pixels ? new Set(pixels) : undefined,
-  bearing: bearing ? { left: bearing.left, right: bearing.right } : undefined,
-})
+const clone = <T>(value: T): T => structuredClone(toRaw(value))
+
+const glyphToState = (glyph: Glyph) => {
+  // Discard irrelevant properties (bounds can be recalculated, code is redundant )
+  const { bounds, code, ...state } = clone(glyph)
+  return state
+}
 
 export const useHistory = defineStore('history', () => {
+  const storage = useStorage()
+
   const histories = new Map<number, History>()
   const maxStackSize = 50
 
-  const add = (code: number) => histories.set(code, { index: 0, stack: [] })
+  const add = (glyph: Glyph) => {
+    histories.set(glyph.code, { index: 0, stack: [] })
+    const initialState = glyphToState(glyph)
+    histories.set(glyph.code, { index: 0, stack: [initialState] })
+  }
   const remove = (code: number) => histories.delete(code)
 
   const undo = (glyph: Glyph) => {
@@ -33,12 +41,10 @@ export const useHistory = defineStore('history', () => {
     const state = history.stack.at(history.index)
     if (!state) return
 
-    const { pixels, bearing } = cloneState(state)
-    if (pixels) {
-      glyph.pixels = pixels
-      glyph.bounds = getBounds(pixels)
-    }
-    if (bearing) glyph.bearing = bearing
+    Object.assign(glyph, clone(state))
+    glyph.bounds = getBounds(glyph.pixels)
+
+    storage.backupGlyphDebounced(glyph)
   }
 
   const redo = (glyph: Glyph) => {
@@ -49,12 +55,10 @@ export const useHistory = defineStore('history', () => {
     const state = history.stack.at(history.index)
     if (!state) return
 
-    const { pixels, bearing } = cloneState(state)
-    if (pixels) {
-      glyph.pixels = new Set(pixels)
-      glyph.bounds = getBounds(pixels)
-    }
-    if (bearing) glyph.bearing = bearing
+    Object.assign(glyph, clone(state))
+    glyph.bounds = getBounds(glyph.pixels)
+
+    storage.backupGlyphDebounced(glyph)
   }
 
   const saveState = (glyph: Glyph) => {
@@ -67,7 +71,10 @@ export const useHistory = defineStore('history', () => {
       history.stack.splice(history.index + 1)
     }
 
-    history.stack.push(cloneState(glyph))
+    glyph.version++
+    const state = clone(glyph)
+    history.stack.push(state)
+    storage.backupGlyphDebounced(state)
 
     if (history.stack.length > maxStackSize) history.stack.shift()
     history.index = history.stack.length - 1

@@ -23,7 +23,6 @@ export type Glyph = {
   pixels: Set<number>
   bounds: Bounds
   bearing: { left: number; right: number }
-  guide: { enabled: boolean }
   version: number
 }
 
