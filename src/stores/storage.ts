@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { useFont } from './font'
 import type { Glyph } from '@/types'
+import sluggify from '@sindresorhus/slugify'
 
 export const useStorage = defineStore('storage', () => {
   const font = useFont()
@@ -36,10 +37,10 @@ export const useStorage = defineStore('storage', () => {
   const save = async () => {
     const code = font.toCode()
 
-    if (fileHandle) {
+    if ('showSaveFilePicker' in window) {
       fileHandle ??= await window.showSaveFilePicker({
         types: [fileType],
-        id: `gfx-fe-${font.name}`,
+        id: `gfx-fe-${sluggify(font.name)}`,
         suggestedName: font.name,
       })
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useFont } from '@/stores/font'
 import { useHistory } from '@/stores/history'
+import { useStorage } from '@/stores/storage'
 import type { Glyph } from '@/types'
-import { onKeyStroke, useActiveElement } from '@vueuse/core'
+import { onKeyDown, onKeyStroke } from '@vueuse/core'
 import { computed, toRefs } from 'vue'
 import GlyphEditorCanvas from './GlyphEditorCanvas.vue'
 
@@ -10,28 +10,35 @@ const props = defineProps<{ glyph: Glyph }>()
 const { glyph } = toRefs(props)
 
 const history = useHistory()
+const storage = useStorage()
 
 const char = computed(() => {
   const char = String.fromCharCode(glyph.value.code)
   return char === ' ' ? 'Space' : char
 })
 
-const activeElement = useActiveElement()
-const activeElementIsInput = computed(() => {
-  const tagName = activeElement.value?.tagName
-  return tagName === 'INPUT' || tagName === 'TEXTAREA'
-})
+const shouldIgnoreKeydown = () => {
+  if (!document.activeElement) return false
+  const tag = document.activeElement.tagName
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)
+}
 
 onKeyStroke('z', (e) => {
-  if (!e.ctrlKey || activeElementIsInput.value) return
+  if (!e.ctrlKey || shouldIgnoreKeydown()) return
   e.preventDefault()
   history.undo(glyph.value)
 })
 
 onKeyStroke('y', (e) => {
-  if (!e.ctrlKey || activeElementIsInput.value) return
+  if (!e.ctrlKey || shouldIgnoreKeydown()) return
   e.preventDefault()
   history.redo(glyph.value)
+})
+
+onKeyDown('s', (e) => {
+  if (!e.ctrlKey || shouldIgnoreKeydown()) return
+  e.preventDefault()
+  storage.save()
 })
 </script>
 

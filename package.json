@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@sindresorhus/slugify": "^3.0.0",
     "@vueuse/core": "^14.0.0",
     "@vueuse/math": "^14.0.0",
     "pinia": "^3.0.3",
