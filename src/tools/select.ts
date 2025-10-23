@@ -7,6 +7,7 @@ import { computed, ref, toRaw, watch } from 'vue'
 import icon from '@/assets/icons/icon-select.svg'
 import { defineTool } from './tool'
 import { useHistory } from '@/stores/history'
+import { pointsAreEqual } from '@/utils/point'
 
 export const useSelect = defineTool('select', {
   icon,
@@ -97,8 +98,11 @@ export const useSelect = defineTool('select', {
 
     // Move Mode
     let lastMovePoint = { x: 0, y: 0 }
+    let startMovePoint = { x: 0, y: 0 }
 
-    const startMove = (point: Point) => (lastMovePoint = point)
+    const startMove = (point: Point) => {
+      startMovePoint = lastMovePoint = point
+    }
 
     const move = (point: Point) => {
       if (!glyph.value) return
@@ -127,6 +131,10 @@ export const useSelect = defineTool('select', {
 
     const endMove = () => {
       if (!glyph.value) return
+
+      const hasMoved = !pointsAreEqual(startMovePoint, lastMovePoint)
+      if (!hasMoved) return
+
       font.updateGlyphBounds(glyph.value)
       history.saveState(glyph.value)
     }
@@ -177,7 +185,7 @@ export const useSelect = defineTool('select', {
       // The user can click and move the selection as often as desired.
       // Only when the selection is stopped by clicking outside the selection
       // we consider the move to be finished.
-      if (!clickIsInSelection && selectionPolygon.value.length) endMove()
+      if (!clickIsInSelection && selectionPolygon.value.length > 1) endMove()
 
       // If we click on a selection, we can move it. Otherwise we start a new
       // selection.
