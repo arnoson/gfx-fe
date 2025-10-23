@@ -11,13 +11,19 @@ import { useFont } from './stores/font'
 import { useStorage } from './stores/storage'
 import { useEditor } from './stores/editor'
 import ToolBar from 'vue-toolkit/src/components/ToolBar.vue'
+import { computed } from 'vue'
 
-const { height } = useWindowSize()
 const font = useFont()
 const editor = useEditor()
 const storage = useStorage()
 
 storage.restoreBackup()
+
+const { width, height } = useWindowSize()
+const sidebarDefaultSize = computed(() => (312 / width.value) * 100)
+const sidebarMinSize = computed(() => (285 / width.value) * 100)
+const previewDefaultSize = computed(() => (150 / height.value) * 100)
+const previewMinSize = computed(() => (110 / height.value) * 100)
 
 const clear = () => {
   font.clear()
@@ -30,7 +36,11 @@ const clear = () => {
   <GlyphDefs />
 
   <SplitterGroup direction="horizontal">
-    <SplitterPanel id="panel-sidebar" :default-size="25">
+    <SplitterPanel
+      id="panel-sidebar"
+      :default-size="sidebarDefaultSize"
+      :min-size="sidebarMinSize"
+    >
       <ProjectProperties
         v-model:name="font.name"
         :has-unsaved-changes="storage.hasUnsavedChanges"
@@ -64,7 +74,11 @@ const clear = () => {
           id="panel-editor:panel-preview"
           class="resize-handle"
         />
-        <SplitterPanel id="panel-preview" :default-size="(200 / height) * 100">
+        <SplitterPanel
+          id="panel-preview"
+          :default-size="previewDefaultSize"
+          :min-size="previewMinSize"
+        >
           <DisplayPreview />
         </SplitterPanel>
       </SplitterGroup>
