@@ -52,4 +52,10 @@ const baseline = computed({
   padding-top: 1rem;
   padding-inline: 1rem;
 }
+
+summary {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
 </style>

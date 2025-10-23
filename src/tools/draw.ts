@@ -9,7 +9,6 @@ import { defineTool } from './tool'
 export const useDraw = defineTool('draw', {
   icon,
   shortcut: 'p',
-  pointRounding: 'round',
   setup: () => {
     const font = useFont()
     const editor = useEditor()
