@@ -35,22 +35,25 @@ export const useEditor = defineStore('editor', () => {
   const draw = useDraw()
   const select = useSelect()
   const fill = useFill()
-  const tools = { draw, select, fill }
-  type ToolId = keyof typeof tools
+  const tools = ref({ draw, select, fill })
+  type ToolId = keyof typeof tools.value
 
   const activeToolId = ref<ToolId>('draw')
-  const activeTool = computed(() => tools[activeToolId.value])
+  const activeTool = computed(() => tools.value[activeToolId.value])
 
   const activateTool = (id: ToolId) => {
     const prevToolId = activeTool.value.id
     activeTool.value.deactivate?.()
     activeToolId.value = id
-    tools[id].activate?.(prevToolId)
+    tools.value[id].activate?.(prevToolId)
   }
   activateTool(activeToolId.value)
 
   // Selection
   const selectionClipboard = ref<Selection>()
+
+  // Draw
+  const isErasing = ref(false)
 
   return {
     activeGlyph,
@@ -61,6 +64,7 @@ export const useEditor = defineStore('editor', () => {
     activeToolId,
     activateTool,
     selectionClipboard,
+    isErasing,
   }
 })
 
