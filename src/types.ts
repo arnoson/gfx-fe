@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { Component, Ref } from 'vue'
 import {
   boolean,
   number,
@@ -24,7 +24,7 @@ export type Glyph = {
   bounds: Bounds
   bearing: { left: number; right: number }
   guide: { enabled: boolean }
-  version: number,
+  version: number
 }
 
 export type Metrics = {
@@ -45,13 +45,16 @@ export type ToolConfig = {
 }
 
 export interface Tool {
-  name: string
-  config?: ToolConfig
+  id: string
+  icon: Component | string
+  shortcut?: string
+  pointRounding?: 'floor' | 'round' | 'ceil'
   onMouseDown?: (point: Point) => unknown
   onMouseMove?: (point: Point) => unknown
   onMouseUp?: (point: Point) => unknown
   onKeyDown?: (e: KeyboardEvent) => unknown
-  onGlyphChange?: (glyph: Glyph) => unknown
+  activate?: (prevToolId: string) => void
+  deactivate?: () => void
 }
 
 export type Point = {

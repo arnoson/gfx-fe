@@ -1,22 +1,26 @@
 <script setup lang="ts">
-import { useEventListener, useWindowSize } from '@vueuse/core'
+import { useWindowSize } from '@vueuse/core'
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'radix-vue'
+import { ProjectProperties } from 'vue-toolkit'
 import DisplayPreview from './components/DisplayPreview.vue'
 import FontProperties from './components/FontProperties.vue'
 import GlyphDefs from './components/GlyphDefs.vue'
 import GlyphEditor from './components/GlyphEditor.vue'
-import GlyphList from './components/GlyphList.vue'
+import GlyphsPanel from './components/GlyphsPanel.vue'
 import { useFont } from './stores/font'
 import { useStorage } from './stores/storage'
-import { ProjectProperties } from 'vue-toolkit'
+import { useEditor } from './stores/editor'
+import ToolBar from 'vue-toolkit/src/components/ToolBar.vue'
 
 const { height } = useWindowSize()
 const font = useFont()
+const editor = useEditor()
 const storage = useStorage()
 
 const clear = () => {
   font.clear()
   storage.clear()
+  editor.activeGlyph = undefined
 }
 </script>
 
@@ -38,7 +42,7 @@ const clear = () => {
         </template>
       </ProjectProperties>
       <FontProperties />
-      <GlyphList />
+      <GlyphsPanel />
     </SplitterPanel>
     <SplitterResizeHandle
       id="panel-sidebar:panel-content"
@@ -47,7 +51,12 @@ const clear = () => {
     <SplitterPanel id="panel-content">
       <SplitterGroup direction="vertical">
         <SplitterPanel id="panel-editor">
-          <GlyphEditor v-if="font.activeGlyph" :glyph="font.activeGlyph" />
+          <ToolBar
+            :tools="editor.tools"
+            :selected="editor.activeToolId"
+            @select="editor.activateTool($event)"
+          />
+          <GlyphEditor v-if="editor.activeGlyph" :glyph="editor.activeGlyph" />
         </SplitterPanel>
         <SplitterResizeHandle
           id="panel-editor:panel-preview"
@@ -87,8 +96,8 @@ const clear = () => {
 }
 
 #panel-sidebar {
-  display: grid;
-  grid-template-rows: max-content 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
 }
 </style>

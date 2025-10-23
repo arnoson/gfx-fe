@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Metrics } from '@/types'
-import { getInputId } from '@/utils/id'
+import { getInputId } from 'vue-toolkit'
 
 defineProps<{ label: string }>()
 const model = defineModel<Metrics>({ required: true })

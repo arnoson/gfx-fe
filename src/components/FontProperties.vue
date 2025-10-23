@@ -1,20 +1,15 @@
 <script setup lang="ts">
 import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
-import { useHistory } from '@/stores/history'
 import { getBounds, translatePixels } from '@/utils/pixel'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import { NumberField, SizeField } from 'vue-toolkit'
 import FontInput from './FontInput.vue'
 import MetricsField from './MetricsField.vue'
 import NumberCheckField from './NumberCheckField.vue'
-import NumberField from './NumberField.vue'
-import SizeField from './SizeField.vue'
-import TextField from './TextField.vue'
 
 const font = useFont()
 const editor = useEditor()
-const history = useHistory()
-const clearDialog = ref()
 
 const baseline = computed({
   get: () => font.baseline,
@@ -33,8 +28,7 @@ const baseline = computed({
 
 <template>
   <div class="font-info flow">
-    <TextField label="Name" v-model="font.name" />
-    <NumberField label="Line Height" :min="1" v-model="font.lineHeight" />
+    <NumberField label="Leading" :min="1" v-model="font.lineHeight" />
     <NumberCheckField
       label="Baseline"
       label-check="Move Glyphs"

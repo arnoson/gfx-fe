@@ -5,12 +5,10 @@ import type { Glyph } from '@/types'
 import { onKeyStroke, useActiveElement } from '@vueuse/core'
 import { computed, toRefs } from 'vue'
 import GlyphEditorCanvas from './GlyphEditorCanvas.vue'
-import GlyphEditorTools from './GlyphEditorTools.vue'
 
 const props = defineProps<{ glyph: Glyph }>()
 const { glyph } = toRefs(props)
 
-const font = useFont()
 const history = useHistory()
 
 const char = computed(() => {
@@ -40,7 +38,6 @@ onKeyStroke('y', (e) => {
 <template>
   <div class="editor">
     <GlyphEditorCanvas :glyph="glyph" />
-    <GlyphEditorTools :glyph="glyph" />
     <div class="panel info">
       <input type="number" v-model="glyph.bearing.left" min="0" />
       <header>{{ char }}</header>

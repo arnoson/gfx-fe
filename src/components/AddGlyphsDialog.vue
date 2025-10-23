@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
 import { ref } from 'vue'
-
+import { TextField } from 'vue-toolkit'
 import ModalDialog from './ModalDialog.vue'
-import TextField from './TextField.vue'
 
 const font = useFont()
+const editor = useEditor()
+
 const dialog = ref<InstanceType<typeof ModalDialog>>()
 const errorDialog = ref<InstanceType<typeof ModalDialog>>()
 const characters = ref('')
@@ -21,8 +23,8 @@ const charactersToCode = (characters: string[]) => {
   for (const character of characters) {
     if (character.match(/.+-.+/)) {
       const [from, to] = character.split('-')
-      const fromCode = characterToCode(from)
-      const toCode = characterToCode(to)
+      const fromCode = characterToCode(from!)
+      const toCode = characterToCode(to!)
       for (let i = fromCode; i <= toCode; i++) codes.push(i)
     } else {
       codes.push(characterToCode(character))
@@ -52,7 +54,8 @@ const add = async () => {
   }
 
   codes.forEach((code) => font.addGlyph({ code }))
-  window.location.hash = `#/glyph/${codes[0]}`
+  const [firstCode] = codes
+  if (firstCode) editor.activateGlyph(firstCode)
 }
 
 const open = () => {
@@ -68,14 +71,13 @@ defineExpose({ open })
    handlers of the split pane. Stopping them here solves the problem. -->
   <ModalDialog ref="dialog" @mousemove.stop v-slot="{ close }">
     <form method="dialog" class="flow">
-      <TextField label="Glyphs" v-model="characters">
-        <template #info>
-          Use multiple characters separated by spaces
-          <span class="code">A B C</span>, unicode notation
-          <span class="code">\u003F</span> and ranges
-          <span class="code">a-z 0-9 \u0041-\u005A</span>.
-        </template>
-      </TextField>
+      <TextField label="Glyphs" v-model="characters" />
+      <div class="info">
+        Use multiple characters separated by spaces
+        <span class="code">A B C</span>, unicode notation
+        <span class="code">\u003F</span> and ranges
+        <span class="code">a-z 0-9 \u0041-\u005A</span>.
+      </div>
       <menu>
         <button type="reset" @click="close">Cancel</button>
         <button type="submit" value="submit" data-theme="positive" @click="add">
@@ -90,7 +92,7 @@ defineExpose({ open })
       <div v-if="alreadyExistingCodes.length === 1">
         The
         <span class="code">
-          {{ String.fromCharCode(alreadyExistingCodes[0]) }}
+          {{ String.fromCharCode(alreadyExistingCodes[0]!) }}
         </span>
         glyph already exists.
       </div>
@@ -117,13 +119,16 @@ defineExpose({ open })
 dialog {
   line-height: 1.5;
 
-  @supports (position-anchor: --add-glyph-button) {
+  @supports (position-anchor: --glyphs-panel) {
+    position-anchor: --glyphs-panel;
     margin: 0;
-    margin-left: 0.5rem;
-    position-anchor: --add-glyph-button;
     left: anchor(right);
     /* Optically align the field label to the baseline of the add glyphs button */
-    top: calc(anchor(top) - 0.6rem);
+    top: calc(anchor(top) - var(--size-2));
   }
+}
+
+.info {
+  color: var(--color-gray-4);
 }
 </style>

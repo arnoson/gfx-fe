@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue'
-import SelectField from './SelectField.vue'
-import TextField from './TextField.vue'
-import NumberField from './NumberField.vue'
-import SliderField from './SliderField.vue'
-
-type Option = { value: string; label: string }
-type OptionGroup = { label: string; options: Option[] }
+import { ref, shallowRef } from 'vue'
+import { NumberField, SelectField, TextField } from 'vue-toolkit'
+import SliderField from 'vue-toolkit/src/components/SliderField.vue'
 
 const model = defineModel<{ name: string; size: number; threshold: number }>({
   required: true,

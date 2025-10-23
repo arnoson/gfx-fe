@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getInputId } from '@/utils/id'
+import { getInputId } from 'vue-toolkit'
 
 defineProps<{
   label: string
@@ -25,7 +25,7 @@ const id = getInputId()
         :step="step"
         v-model="value"
       />
-      <label class="move-glyphs">
+      <label class="check">
         <div class="label-text">{{ labelCheck }}</div>
         <input type="checkbox" v-model="check" />
       </label>
@@ -44,7 +44,7 @@ const id = getInputId()
   }
 }
 
-.move-glyphs {
+.check {
   display: flex;
   align-items: center;
 

@@ -1,7 +1,11 @@
-import type { Point } from '@/types'
+import type { Glyph, Point } from '@/types'
 import { type Pixels } from '@/utils/pixel'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { effect, ref } from 'vue'
+import { computed, effect, ref } from 'vue'
+import { useFont } from './font'
+import { useDraw } from '@/tools/draw'
+import { useSelect } from '@/tools/select'
+import { useFill } from '@/tools/fill'
 
 type Selection = { pixels: Pixels; polygon: Point[] }
 
@@ -12,23 +16,53 @@ export const offscreenCanvasCtx = offscreenCanvas.getContext('2d', {
 })!
 
 export const useEditor = defineStore('editor', () => {
-    const activeToolName = ref<'draw' | 'select'>('draw')
-    const canvas = ref({
-      width: 20,
-      height: 20,
-    })
+  const font = useFont()
 
-    effect(() => {
-      offscreenCanvas.width = canvas.value.width
-      offscreenCanvas.height = canvas.value.height
-    })
+  // Glyph
+  const activeGlyph = ref<Glyph>()
+  const activateGlyph = (code: Glyph['code']) => {
+    activeGlyph.value = font.glyphs.get(code)
+  }
 
-    const selectionClipboard = ref<Selection>()
+  // Canvas
+  const canvas = ref({ width: 20, height: 20 })
+  effect(() => {
+    offscreenCanvas.width = canvas.value.width
+    offscreenCanvas.height = canvas.value.height
+  })
 
-    return { activeToolName, canvas, selectionClipboard }
-  },
+  // Tools
+  const draw = useDraw()
+  const select = useSelect()
+  const fill = useFill()
+  const tools = { draw, select, fill }
+  type ToolId = keyof typeof tools
 
-)
+  const activeToolId = ref<ToolId>('draw')
+  const activeTool = computed(() => tools[activeToolId.value])
+
+  const activateTool = (id: ToolId) => {
+    const prevToolId = activeTool.value.id
+    activeTool.value.deactivate?.()
+    activeToolId.value = id
+    tools[id].activate?.(prevToolId)
+  }
+  activateTool(activeToolId.value)
+
+  // Selection
+  const selectionClipboard = ref<Selection>()
+
+  return {
+    activeGlyph,
+    activateGlyph,
+    canvas,
+    tools,
+    activeTool,
+    activeToolId,
+    activateTool,
+    selectionClipboard,
+  }
+})
 
 if (import.meta.hot)
   import.meta.hot.accept(acceptHMRUpdate(useEditor, import.meta.hot))

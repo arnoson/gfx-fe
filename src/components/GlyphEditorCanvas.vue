@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
-import { useDraw } from '@/tools/draw'
-import { useSelect } from '@/tools/select'
-import type { Glyph, Tool } from '@/types'
+import type { Glyph } from '@/types'
 import { pixelIsCropped, unpackPixelX, unpackPixelY } from '@/utils/pixel'
 import { useElementSize, useEventListener } from '@vueuse/core'
-import { computed, ref, toRef, toRefs, watch } from 'vue'
+import { computed, ref, toRefs } from 'vue'
 
 const props = defineProps<{ glyph: Glyph }>()
 const { glyph } = toRefs(props)
@@ -44,15 +42,6 @@ const scale = computed(() => {
   return Math.min(scaleContainer, scaleMax)
 })
 
-const draw = useDraw({ glyph })
-const select = useSelect({ glyph })
-const { selectionPolygon, selectedPixels } = select
-const tools = { draw, select }
-
-const activeTool = ref<Tool>(draw)
-const activeToolName = toRef(() => editor.activeToolName)
-watch(activeToolName, (name) => (activeTool.value = tools[name]))
-
 const mouseToCanvas = (
   e: Pick<MouseEvent, 'offsetX' | 'offsetY'>,
   rounding: 'floor' | 'round' | 'ceil' = 'floor',
@@ -72,14 +61,20 @@ const mouseToCanvas = (
   return { x, y }
 }
 
+const shouldIgnoreKeydown = () => {
+  if (!document.activeElement) return false
+  const tag = document.activeElement.tagName
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)
+}
+
 // Forward canvas mouse and key events to the active tool.
 useEventListener(canvas, 'mousedown', (e) => {
-  const { onMouseDown, config } = activeTool.value
-  onMouseDown?.(mouseToCanvas(e, config?.pointRounding))
+  const { onMouseDown, pointRounding } = editor.activeTool
+  onMouseDown?.(mouseToCanvas(e, pointRounding))
 })
 useEventListener(canvas, 'mousemove', (e) => {
-  const { onMouseMove, config } = activeTool.value
-  onMouseMove?.(mouseToCanvas(e, config?.pointRounding))
+  const { onMouseMove, pointRounding } = editor.activeTool
+  onMouseMove?.(mouseToCanvas(e, pointRounding))
 })
 useEventListener('mouseup', (e) => {
   if (!canvas.value) return
@@ -90,12 +85,20 @@ useEventListener('mouseup', (e) => {
     offsetX: e.clientX - left,
     offsetY: e.clientY - top,
   }
-  const { onMouseUp, config } = activeTool.value
-  onMouseUp?.(mouseToCanvas(relativeMousePosition, config?.pointRounding))
+  const { onMouseUp, pointRounding } = editor.activeTool
+  onMouseUp?.(mouseToCanvas(relativeMousePosition, pointRounding))
 })
-useEventListener('keydown', (e) => activeTool.value.onKeyDown?.(e))
+useEventListener('keydown', (e) => {
+  if (shouldIgnoreKeydown()) return
 
-watch(glyph, () => activeTool.value.onGlyphChange?.(glyph.value))
+  editor.activeTool.onKeyDown?.(e)
+
+  if (!e.ctrlKey && !e.metaKey) {
+    for (const tool of Object.values(editor.tools)) {
+      if (e.key === tool.shortcut) editor.activateTool(tool.id as any)
+    }
+  }
+})
 </script>
 
 <template>
@@ -103,7 +106,8 @@ watch(glyph, () => activeTool.value.onGlyphChange?.(glyph.value))
     class="container"
     ref="container"
     :data-selection="
-      activeTool.name === 'select' && selectionPolygon.length > 2
+      editor.activeTool.id === 'select' &&
+      editor.tools.select.selectionPolygon.length > 2
     "
   >
     <svg
@@ -118,7 +122,7 @@ watch(glyph, () => activeTool.value.onGlyphChange?.(glyph.value))
           :x="unpackPixelX(pixel)"
           :y="unpackPixelY(pixel)"
           :data-cropped="pixelIsCropped(pixel, canvasWidth, canvasHeight)"
-          :data-selected="selectedPixels?.has(pixel)"
+          :data-selected="editor.tools.select.selectedPixels?.has(pixel)"
           width="1"
           height="1"
           class="pixel"
@@ -233,9 +237,16 @@ watch(glyph, () => activeTool.value.onGlyphChange?.(glyph.value))
       </text>
       <!-- Selection -->
       <polygon
-        v-if="activeTool.name === 'select' && selectionPolygon.length > 2"
+        v-if="
+          editor.activeTool.id === 'select' &&
+          editor.tools.select.selectionPolygon.length > 2
+        "
         class="selection"
-        :points="selectionPolygon.map(({ x, y }) => `${x},${y}`).join(' ')"
+        :points="
+          editor.tools.select.selectionPolygon
+            .map(({ x, y }) => `${x},${y}`)
+            .join(' ')
+        "
       />
     </svg>
   </div>
@@ -298,7 +309,7 @@ watch(glyph, () => activeTool.value.onGlyphChange?.(glyph.value))
   mix-blend-mode: difference;
   /* Increase the stroke slightly, otherwise parts will get lost with the blend mode. */
   stroke-width: 1.5;
-  font-family: v-bind('font.basedOn.name');
+  font-family: v-bind('`"${font.basedOn.name}"`');
   font-size: v-bind('`${font.basedOn.size}pt`');
   pointer-events: none;
   user-select: none;

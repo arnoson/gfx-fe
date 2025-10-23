@@ -1,19 +1,25 @@
 import { offscreenCanvasCtx, useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
-import { useHistory } from '@/stores/history'
-import type { Point, ToolConfig, ToolContext } from '@/types'
-import { packPixel, translatePixels, type Pixels } from '@/utils/pixel'
+import type { Point } from '@/types'
+import {
+  packPixel,
+  translatePixels,
+  getBounds,
+  type Pixels,
+} from '@/utils/pixel'
 import { ctxToPixels } from '@/utils/text'
-import { computed, ref, toRaw } from 'vue'
+import { computed, ref, toRaw, watch } from 'vue'
+import icon from '@/assets/icons/icon-select.svg'
 import { defineTool } from './tool'
 
-const config: ToolConfig = { pointRounding: 'round' }
-
-export const useSelect = defineTool(
-  'select',
-  ({ glyph }: ToolContext) => {
+export const useSelect = defineTool('select', {
+  icon,
+  shortcut: 'l', // Like PS lasso / free-hand selection tool
+  pointRounding: 'round',
+  setup: () => {
     const font = useFont()
     const editor = useEditor()
+    const glyph = computed(() => editor.activeGlyph)
     const ctx = offscreenCanvasCtx
 
     let mode: 'select' | 'move' | 'idle' = 'idle'
@@ -35,9 +41,9 @@ export const useSelect = defineTool(
 
       // Draw the selection polygon.
       ctx.beginPath()
-      ctx.moveTo(selectionPolygon.value[0].x, selectionPolygon.value[0].y)
+      ctx.moveTo(selectionPolygon.value[0]!.x, selectionPolygon.value[0]!.y)
       for (let i = 1; i < selectionPolygon.value.length; i++) {
-        ctx.lineTo(selectionPolygon.value[i].x, selectionPolygon.value[i].y)
+        ctx.lineTo(selectionPolygon.value[i]!.x, selectionPolygon.value[i]!.y)
       }
       ctx.closePath()
       ctx.fillStyle = 'black'
@@ -47,8 +53,8 @@ export const useSelect = defineTool(
     })
 
     // Select Mode
-
     const startSelect = (point: Point) => {
+      if (!glyph.value) return
       glyphStartPixels.value = new Set(glyph.value.pixels)
       selectionPolygon.value = [point]
     }
@@ -72,18 +78,34 @@ export const useSelect = defineTool(
       )
     }
 
+    const selectAll = () => {
+      if (!glyph.value || !glyph.value.pixels.size) return
+
+      const bounds = getBounds(glyph.value.pixels)
+      selectionPolygon.value = [
+        { x: bounds.left, y: bounds.top },
+        { x: bounds.right + 1, y: bounds.top },
+        { x: bounds.right + 1, y: bounds.bottom + 1 },
+        { x: bounds.left, y: bounds.bottom + 1 },
+      ]
+
+      glyphStartPixels.value = new Set()
+      selectedPixels.value = new Set(glyph.value.pixels)
+    }
+
     const removeSelection = () => {
       selectionPolygon.value = []
       selectedPixels.value = new Set()
     }
 
     // Move Mode
-
     let lastMovePoint = { x: 0, y: 0 }
 
     const startMove = (point: Point) => (lastMovePoint = point)
 
     const move = (point: Point) => {
+      if (!glyph.value) return
+
       const deltaX = point.x - lastMovePoint.x
       const deltaY = point.y - lastMovePoint.y
 
@@ -107,6 +129,7 @@ export const useSelect = defineTool(
     }
 
     const endMove = () => {
+      if (!glyph.value) return
       font.saveGlyphState(glyph.value)
     }
 
@@ -120,6 +143,7 @@ export const useSelect = defineTool(
     }
 
     const cut = () => {
+      if (!glyph.value) return
       editor.selectionClipboard = {
         pixels: new Set(selectedPixels.value),
         polygon: [...selectionPolygon.value],
@@ -133,7 +157,7 @@ export const useSelect = defineTool(
     }
 
     const paste = () => {
-      if (!editor.selectionClipboard) return
+      if (!glyph.value || !editor.selectionClipboard) return
       selectionPolygon.value = editor.selectionClipboard.polygon
       selectedPixels.value = editor.selectionClipboard.pixels
       glyphStartPixels.value = new Set(glyph.value.pixels)
@@ -143,11 +167,10 @@ export const useSelect = defineTool(
     }
 
     // Events
-
-    const onGlyphChange = () => {
+    watch(glyph, () => {
       removeSelection()
-      glyphStartPixels.value = new Set(glyph.value.pixels)
-    }
+      if (glyph.value) glyphStartPixels.value = new Set(glyph.value.pixels)
+    })
 
     const onMouseDown = (point: Point) => {
       const pixel = packPixel(point.x, point.y)
@@ -177,6 +200,7 @@ export const useSelect = defineTool(
 
     const remove = () => {
       if (!selectedPixels.value) return
+      if (!glyph.value) return
 
       font.setGlyphPixels(
         glyph.value,
@@ -189,7 +213,8 @@ export const useSelect = defineTool(
       mode = 'idle'
     }
 
-    const onKeyDown = ({ key, ctrlKey }: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const { key, ctrlKey } = e
       if (key === 'Delete') remove()
       else if (key === 'Escape') {
         mode = 'idle'
@@ -200,6 +225,9 @@ export const useSelect = defineTool(
         cut()
       } else if (key === 'v' && ctrlKey) {
         paste()
+      } else if (key === 'a' && ctrlKey) {
+        e.preventDefault()
+        selectAll()
       }
     }
 
@@ -207,12 +235,10 @@ export const useSelect = defineTool(
       name: 'select',
       selectionPolygon,
       selectedPixels,
-      onGlyphChange,
       onMouseDown,
       onMouseMove,
       onMouseUp,
       onKeyDown,
     }
   },
-  config,
-)
+})
