@@ -31,10 +31,12 @@ export const parseFont = (code: string): GfxFont => {
   if (!font) throw new Error('No `GFXfont` found.')
 
   const [, name, characterInfo] = font
-  const [asciiStart, asciiEnd, yAdvance] = characterInfo.split(',').map(Number)
+  const [asciiStart = 0, asciiEnd = 0, yAdvance = 0] = characterInfo!
+    .split(',')
+    .map(Number)
 
   const bitmaps = code
-    .match(/Bitmaps.*=\s+{([^}]+)/)?.[1]
+    .match(/Bitmaps.*=\s+{([^}]+)/)?.[1]!
     .split(',')
     .map(Number)
 
@@ -43,17 +45,21 @@ export const parseFont = (code: string): GfxFont => {
 
   // Look for groups of 6 numbers: `{ 0, 0, 0, 0, 0, 0}`.
   const glyphs = code.match(/{(\s*-?[a-zA-Z0-9]+\s*,?){6}}/g)?.map((v) => {
-    const [byteOffset, width, height, xAdvance, deltaX, deltaY] = v
-      .replace(/[{}]/g, '')
-      .split(',')
-      .map(Number)
+    const [
+      byteOffset = 0,
+      width = 0,
+      height = 0,
+      xAdvance = 0,
+      deltaX = 0,
+      deltaY = 0,
+    ] = v.replace(/[{}]/g, '').split(',').map(Number)
     return { byteOffset, width, height, xAdvance, deltaX, deltaY }
   })
 
   if (!glyphs) throw new Error('No glyphs found.')
 
   return {
-    name,
+    name: name!,
     bytes,
     glyphs,
     asciiStart,
@@ -107,7 +113,7 @@ const uint8ToString = (buffer: Uint8Array) => {
   const hexStrings: string[] = []
 
   for (let i = 0; i < buffer.length; i++) {
-    hexStrings.push('0x' + buffer[i].toString(16).padStart(2, '0'))
+    hexStrings.push('0x' + buffer[i]!.toString(16).padStart(2, '0'))
   }
 
   // 12 hex strings fit nicely into a 80 characters line with 2 or 4 spaces
