@@ -18,9 +18,9 @@
     "pinia-plugin-persistedstate": "^4.5.0",
     "radix-vue": "^1.9.17",
     "superjson": "^2.2.3",
+    "tool-toolkit": "file:../tool-toolkit",
     "valibot": "^1.1.0",
     "vue": "^3.5.22",
-    "vue-toolkit": "file:../vue-toolkit",
     "vue3-dropzone": "^2.2.1"
   },
   "devDependencies": {

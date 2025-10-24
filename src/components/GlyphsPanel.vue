@@ -2,7 +2,7 @@
 import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
 import { computed, useTemplateRef } from 'vue'
-import { FramesList } from 'vue-toolkit'
+import { FramesList } from 'tool-toolkit'
 import AddGlyphsDialog from './AddGlyphsDialog.vue'
 import ModalDialog from './ModalDialog.vue'
 

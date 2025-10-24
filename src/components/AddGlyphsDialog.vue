@@ -2,7 +2,7 @@
 import { useEditor } from '@/stores/editor'
 import { useFont } from '@/stores/font'
 import { ref } from 'vue'
-import { TextField } from 'vue-toolkit'
+import { TextField } from 'tool-toolkit'
 import ModalDialog from './ModalDialog.vue'
 
 const font = useFont()

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getInputId } from 'vue-toolkit'
+import { getInputId } from 'tool-toolkit'
 
 defineProps<{
   label: string

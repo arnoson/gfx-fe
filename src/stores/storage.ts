@@ -1,4 +1,4 @@
-import { downloadFile, stripExtension } from 'vue-toolkit'
+import { downloadFile, stripExtension } from 'tool-toolkit'
 import { parse, stringify } from 'superjson'
 import { useDebounceFn } from '@vueuse/core'
 import { computed, ref } from 'vue'

@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'radix-vue'
-import { ProjectProperties } from 'vue-toolkit'
+import { ProjectProperties, ToolBar } from 'tool-toolkit'
+import { computed } from 'vue'
 import DisplayPreview from './components/DisplayPreview.vue'
 import FontProperties from './components/FontProperties.vue'
 import GlyphDefs from './components/GlyphDefs.vue'
 import GlyphEditor from './components/GlyphEditor.vue'
 import GlyphsPanel from './components/GlyphsPanel.vue'
+import { useEditor } from './stores/editor'
 import { useFont } from './stores/font'
 import { useStorage } from './stores/storage'
-import { useEditor } from './stores/editor'
-import ToolBar from 'vue-toolkit/src/components/ToolBar.vue'
-import { computed } from 'vue'
 
 const font = useFont()
 const editor = useEditor()
