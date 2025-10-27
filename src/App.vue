@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
-import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'radix-vue'
+import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { ProjectProperties, ToolBar } from 'tool-toolkit'
 import { computed } from 'vue'
 import DisplayPreview from './components/DisplayPreview.vue'
@@ -46,6 +46,7 @@ const clear = () => {
         :file-type="storage.fileType"
         @clear="clear()"
         @save="storage.save()"
+        @saveAs="storage.save(true)"
         @open="storage.open($event)"
       >
         <template #clear>

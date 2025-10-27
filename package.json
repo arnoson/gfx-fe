@@ -16,9 +16,9 @@
     "@vueuse/math": "^14.0.0",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",
-    "radix-vue": "^1.9.17",
+    "reka-ui": "^2.6.0",
     "superjson": "^2.2.3",
-    "tool-toolkit": "file:../tool-toolkit",
+    "tool-toolkit": "github:arnoson/tool-toolkit",
     "valibot": "^1.1.0",
     "vue": "^3.5.22",
     "vue3-dropzone": "^2.2.1"
