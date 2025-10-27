@@ -39,7 +39,7 @@ const id = getInputId()
   overflow: hidden;
   gap: 0.5rem;
 
-  input {
+  input[type='number'] {
     flex: 1;
   }
 }
@@ -47,6 +47,10 @@ const id = getInputId()
 .check {
   display: flex;
   align-items: center;
+
+  input {
+    height: 100%;
+  }
 
   .label-text {
     text-overflow: ellipsis;

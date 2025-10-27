@@ -5,6 +5,12 @@ import { getInputId } from 'tool-toolkit'
 defineProps<{ label: string }>()
 const model = defineModel<Metrics>({ required: true })
 const id = getInputId()
+
+const update = (e: InputEvent, key: keyof Metrics) => {
+  let value = (e.target as any).value
+  value = value === '' ? undefined : parseFloat(value)
+  model.value[key] = value
+}
 </script>
 
 <template>
@@ -15,25 +21,29 @@ const id = getInputId()
         type="number"
         placeholder="Asc"
         title="Ascender"
-        v-model="model.ascender"
+        :value="model.ascender"
+        @input="update($event, 'ascender')"
       />
       <input
         type="number"
         placeholder="Cap"
         title="Cap-Height"
-        v-model="model.capHeight"
+        :value="model.capHeight"
+        @input="update($event, 'capHeight')"
       />
       <input
         type="number"
         placeholder="x"
         title="x-Height"
-        v-model="model.xHeight"
+        :value="model.xHeight"
+        @input="update($event, 'xHeight')"
       />
       <input
         type="number"
         placeholder="Des"
         title="Descender"
-        v-model="model.descender"
+        :value="model.descender"
+        @input="update($event, 'descender')"
       />
     </div>
   </div>
