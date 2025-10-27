@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, shallowRef } from 'vue'
-import { NumberField, SelectField, TextField } from 'tool-toolkit'
-import SliderField from 'tool-toolkit/src/components/SliderField.vue'
+import { NumberField, SelectField, TextField, SliderField } from 'tool-toolkit'
 
 const model = defineModel<{ name: string; size: number; threshold: number }>({
   required: true,
