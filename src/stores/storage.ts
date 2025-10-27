@@ -25,7 +25,7 @@ export const useStorage = defineStore('storage', () => {
     const code = await file.text()
     if (isFileHandle) fileHandle = fileOrHandle
 
-    font.fromCode(code)
+    await font.fromCode(code)
     font.name = stripExtension(file.name)
     savedVersions.value = new Map(
       [...font.glyphs.values()].map((v) => [v.code, v.version]),
@@ -34,10 +34,13 @@ export const useStorage = defineStore('storage', () => {
     font.glyphsList.forEach(backupGlyph)
   }
 
-  const save = async () => {
+  const save = async (saveAs = false) => {
     const code = font.toCode()
 
     if ('showSaveFilePicker' in window) {
+      // Force file picker.
+      if (saveAs) fileHandle = null
+
       fileHandle ??= await window.showSaveFilePicker({
         types: [fileType],
         id: `gfx-fe-${sluggify(font.name)}`,
