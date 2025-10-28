@@ -11,6 +11,10 @@ A web-based GFX Font Editor for [Adafruit GFX Fonts](https://learn.adafruit.com/
 
 Try it live: [arnoson.github.io/gfx-fe](https://arnoson.github.io/gfx-fe/)
 
+## Demo
+
+https://github.com/arnoson/gfx-fe/assets/demo.mp4
+
 ## Documentation
 
 ### Add new Glyphs
