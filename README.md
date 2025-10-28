@@ -13,7 +13,7 @@ Try it live: [arnoson.github.io/gfx-fe](https://arnoson.github.io/gfx-fe/)
 
 ## Demo
 
-https://github.com/arnoson/gfx-fe/assets/demo.mp4
+https://github.com/user-attachments/assets/217e08ad-82e5-4268-96f3-4cb33ff1679a
 
 ## Documentation
 
