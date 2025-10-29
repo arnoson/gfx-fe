@@ -80,6 +80,7 @@ onKeyDown('s', (e) => {
   display: flex;
   gap: 1rem;
   margin-block: 1rem;
+  align-items: baseline;
 
   input {
     width: 2ch;
