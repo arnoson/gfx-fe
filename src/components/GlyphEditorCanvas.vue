@@ -168,33 +168,33 @@ useEventListener('keydown', (e) => {
         <line
           v-if="font.metrics.ascender"
           :x1="0"
-          :y1="font.baseline + font.metrics.ascender"
+          :y1="font.baseline - font.metrics.ascender"
           :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.ascender"
+          :y2="font.baseline - font.metrics.ascender"
           class="metrics-guide"
         />
         <line
           v-if="font.metrics.capHeight"
           :x1="0"
-          :y1="font.baseline + font.metrics.capHeight"
+          :y1="font.baseline - font.metrics.capHeight"
           :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.capHeight"
+          :y2="font.baseline - font.metrics.capHeight"
           class="metrics-guide"
         />
         <line
           v-if="font.metrics.xHeight"
           :x1="0"
-          :y1="font.baseline + font.metrics.xHeight"
+          :y1="font.baseline - font.metrics.xHeight"
           :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.xHeight"
+          :y2="font.baseline - font.metrics.xHeight"
           class="metrics-guide"
         />
         <line
           v-if="font.metrics.descender"
           :x1="0"
-          :y1="font.baseline + font.metrics.descender"
+          :y1="font.baseline - font.metrics.descender"
           :x2="canvasWidth"
-          :y2="font.baseline + font.metrics.descender"
+          :y2="font.baseline - font.metrics.descender"
           class="metrics-guide"
         />
       </g>

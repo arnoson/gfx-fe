@@ -43,6 +43,7 @@ const update = (e: InputEvent, key: keyof Metrics) => {
         placeholder="Des"
         title="Descender"
         :value="model.descender"
+        max="0"
         @input="update($event, 'descender')"
       />
     </div>

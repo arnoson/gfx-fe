@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
-import { ProjectProperties, ToolBar } from 'tool-toolkit'
+import { downloadFile, ProjectProperties, ToolBar } from 'tool-toolkit'
 import { computed } from 'vue'
 import DisplayPreview from './components/DisplayPreview.vue'
 import FontProperties from './components/FontProperties.vue'
@@ -11,6 +11,7 @@ import GlyphsPanel from './components/GlyphsPanel.vue'
 import { useEditor } from './stores/editor'
 import { useFont } from './stores/font'
 import { useStorage } from './stores/storage'
+import { fontToOtf } from './utils/otf'
 
 const font = useFont()
 const editor = useEditor()
@@ -29,6 +30,14 @@ const clear = () => {
   storage.clear()
   editor.activeGlyph = undefined
 }
+
+const handleAction = (type: string) => {
+  if (type === 'exportOtf') {
+    const otf = fontToOtf()
+    const blob = new Blob([otf.toArrayBuffer()], { type: 'font/otf' })
+    downloadFile(`${font.name}.otf`, blob)
+  }
+}
 </script>
 
 <template>
@@ -44,9 +53,11 @@ const clear = () => {
         v-model:name="font.name"
         :has-unsaved-changes="storage.hasUnsavedChanges"
         :file-type="storage.fileType"
+        :actions="[{ value: 'exportOtf', label: 'Export OTF' }]"
         @clear="clear()"
         @save="storage.save()"
         @saveAs="storage.save(true)"
+        @action="handleAction"
         @open="storage.open($event)"
       >
         <template #clear>
